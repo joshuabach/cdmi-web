@@ -16,8 +16,6 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 
-from cdmi.browser import site
-
 #lambda request: ListView.as_view(queryset=Resources.objects.filter(user=request.user.username), ...)(request)
 urlpatterns = [
     #  url(r'^admin/filebrowser/', include(site.urls)),

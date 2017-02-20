@@ -1,4 +1,7 @@
 .coverage
 db.*
 *.pyc
-static/
+
+/env/
+/static/
+/tmp/

@@ -64,7 +64,7 @@ OPENID_LOGIN_REDIRECT = 'cdmi:browse'
 #  FILEBROWSER_DIRECTORY = ''
 #FILEBROWSER_ADMIN_THUMBNAIL = 'static/filebrowser/img/completed.png'
 
-MEDIA_ROOT = '/tmp/cdmi/'
+MEDIA_ROOT = 'tmp/cdmi/'
 
 # CDMI
 CDMI_URI = 'http://localhost:8888/'
