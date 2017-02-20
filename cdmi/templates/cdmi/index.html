@@ -1,0 +1,111 @@
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'cdmi/css/custom.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'cdmi/css/bootstrap.css' %}" />
+
+<div class="container">
+    <h1 align="center">Choose storage type</h1>
+
+<table class="table">
+    <tbody>
+    <tr data-bind="foreach: filters">
+        <td style="text-align: center;"data-bind="click: $root.goToSites">
+            <img data-bind="attr: {src: '/static/cdmi/img/' + $data + '.png'}" width=80></img>
+            <strong data-bind="text: $data"></strong>
+        </td>
+    </tr>
+</tbody>
+</table>
+
+<!-- Sites grid -->
+<table class="table" data-bind="visible: $root.chosenSitesData().length > 0">
+    <thead><tr>
+            <th data-bind="click: $root.sortChosenSitesData('name')">Name</th>
+            <th data-bind="click: $root.sortChosenSitesData('latency')">Access Latency</th>
+            <th data-bind="click: $root.sortChosenSitesData('copies')">Number of Copies</th>
+            <th data-bind="click: $root.sortChosenSitesData('location')">Location</th>
+            <th>Quality of Services</th>
+            <th>Transitions</th>
+            <!-- <th>URL</th> -->
+    </tr></thead>
+    <tbody data-bind="foreach: chosenSitesData">
+        <tr data-bind="click: $root.goToSite">
+            <td data-bind="text: name"></td>
+            <td data-bind="text: latency"></td>
+            <td data-bind="text: copies"></td>
+            <td data-bind="text: location"></td>
+            <td data-bind="foreach: qos">
+                <img data-bind="attr: {src: '/static/cdmi/img/' + $data + '.png'}" width=20></img>
+            </td>
+            <td data-bind="text: transitions"></td>
+            <!-- <td data-bind="text: url"></td> -->
+        </tr>     
+    </tbody>
+</table>
+
+<div data-bind="with: chosenSiteData">
+    <div>
+        <h1 data-bind="text: name"></h1>
+        <table class="table">
+            <tbody>
+                <tr>
+                    <td>CDMI URL</td>
+                    <td data-bind="text: url"></td>
+                </tr>
+                <tr>
+                    <td>Data Access</td>
+                    <td><a data-bind="attr: { href: datapath }">Go to site</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</div>
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="{% static 'cdmi/js/jquery-3.1.1.min.js' %}"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="{% static 'cdmi/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'cdmi/js/knockout-3.4.1.js' %}"></script>
+<script>
+    function StorageSitesViewModel() {
+        // Data
+    var self = this;
+    self.filters = ['processing', 'archiving'];
+    self.chosenFilterId = ko.observable();
+    self.chosenSitesData = ko.observableArray();
+    self.chosenSiteData = ko.observable();
+
+    // Behaviours    
+    self.goToSites = function(filter) {
+        self.chosenFilterId(filter);
+        self.chosenSitesData.removeAll();
+        self.chosenSiteData(null);
+
+        $.get('http://localhost:8000/cdmi/sites', { filter: filter }, function(data) {
+            $.each(data.sites, function(index, value) {
+                self.chosenSitesData.push(value);
+            });
+        });
+    };
+
+    self.goToSite = function(site) {
+        self.chosenFilterId(site.filter);
+        self.chosenSitesData.removeAll();
+
+        //$.get('http://localhost:8000/cdmi/sites', { name: site.name }, self.chosenSiteData);
+        self.chosenSiteData(site);
+    };
+
+    self.sortChosenSitesData = function(column) {
+        self.chosenSitesData.sort(function (left, right) {
+            return left[column] == right[column] ? 0 : (left[column] < right[column] ? -1 : 1)
+        });
+    };
+
+    // Show inbox by default
+    //self.goToFolder('Inbox');
+    };
+    ko.applyBindings(new StorageSitesViewModel());
+</script>
