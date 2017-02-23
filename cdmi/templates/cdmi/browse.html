@@ -17,24 +17,11 @@
       </div>
       <div id="navbar" class="navbar-collapse collapse">
         <ul class="nav navbar-nav">
-          <li><a href="{% url 'openid:logout' %}">Logout</a></li>
-          <!-- <li><a href="#">About</a></li> -->
-          <!-- <li><a href="#">Contact</a></li> -->
-          <!-- <li class="dropdown"> -->
-          <!--   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a> -->
-          <!--   <ul class="dropdown-menu"> -->
-          <!--     <li><a href="#">Action</a></li> -->
-          <!--     <li><a href="#">Another action</a></li> -->
-          <!--     <li><a href="#">Something else here</a></li> -->
-          <!--     <li role="separator" class="divider"></li> -->
-          <!--     <li class="dropdown-header">Nav header</li> -->
-          <!--     <li><a href="#">Separated link</a></li> -->
-          <!--     <li><a href="#">One more separated link</a></li> -->
-          <!--   </ul> -->
-          <!-- </li> -->
+            <li><a href="{% url 'cdmi:browse' %}">Go back</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
           <li><a class="btn btn-link" type="button" data-toggle="modal" data-target="#upload">Upload</a></li>
+          <li><a href="{% url 'openid:logout' %}">Logout</a></li>
         </ul>
       </div><!--/.nav-collapse -->
     </div><!--/.container-fluid -->
@@ -42,31 +29,74 @@
 </div>
 
 <div class="container">
-{% if object_list %}
+{% if messages %}
 <table class="table">
+<tbody>
+    {% for message in messages %}
+    <tr{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+        <td>{{ message }}</td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+{% endif %}
+{% if object_list %}
+<table class="table" style="font-size:14px">
     <thead><tr>
         <th>Name</th>
         <th>Type</th>
         <th>QoS</th>
+        <th>Change QoS</th>
         <th></th>
     </thead>
     <tbody>
     {% for o in object_list %}
     <tr>
+        {% if o.type == "File" %}
         <td>
-            {% if o.type == "File" %}
             {{ o.name }}
-            {% endif %}
         </td>
+        {% else %}
+        <form action="{% url 'cdmi:browse' %}" method="get">
+        {% csrf_token %}
+            <input type="hidden" name="path" value="{{ path }}" />
+            <input type="hidden" name="name" value="{{ o.name }}" />
+        <td>
+            <button type="submit" class="btn btn-link">{{ o.name }}</button>
+        </td>
+        </form>
+        {% endif %}
         <td>
             {{ o.type }}
         </td>
         <td>
-            {{ o.capabilities }}
+            <a class="btn btn-link" role="button" data-toggle="collapse" href="#{{ o.name|slugify }}" aria-expanded="false" aria-controls="{{ o.name|slugify }}">
+            {{ o.capabilities_name }}
+            </a>
+            <div class="collapse" id="{{ o.name|slugify }}">
+                <div>
+                    <p>Latency: {{ o.capabilities_latency }}</p>
+                    <p>Redundancy: {{ o.capabilities_redundancy }}</p>
+                    <p>Geolocation: {{ o.capabilities_geolocation }}</p>
+                </div>
+            </div>
+        </td>
+        <td>
+           <div class="dropdown">
+          <!-- <li class="dropdown"> -->
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Supported <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="#">profile2</a></li>
+              <!-- <li role="separator" class="divider"></li> -->
+              <!-- <li class="dropdown-header">Nav header</li> -->
+            </ul>
+          <!-- </li> -->
+           </div>
         </td>
         <form action="{% url 'cdmi:delete' %}" method="post">
         {% csrf_token %}
-            <input type="hidden" name="file" value="{{ o.name }}" />
+            <input type="hidden" name="path" value="{{ path }}" />
+            <input type="hidden" name="name" value="{{ o.name }}" />
         <td>
             <button type="submit" class="btn btn-link">Delete</button>
         </td>
@@ -86,10 +116,14 @@
         <h4 class="modal-title" id="uploadLabel">Upload</h4>
       </div>
       <div class="modal-body">
-        <form action="{% url 'cdmi:browse' %}" method="post" enctype="multipart/form-data">
+        <form action="{% url 'cdmi:upload' %}" method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        {{ form }}
-      </div>
+          <div class="form-group">
+            <label for="file">Upload file</label>
+            <input type="file" id="file" name="file">
+            <p class="help-block">Search for files to upload.</p>
+            <input type="hidden" name="path" value="{{ path }}" />
+          </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
         <button type="submit" class="btn btn-primary">Upload</button>
