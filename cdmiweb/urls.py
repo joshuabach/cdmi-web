@@ -16,10 +16,13 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 
+from . import views
+
 #lambda request: ListView.as_view(queryset=Resources.objects.filter(user=request.user.username), ...)(request)
 urlpatterns = [
     #  url(r'^admin/filebrowser/', include(site.urls)),
     #  url(r'^grappelli/', include('grappelli.urls')),
+    url(r'^$', views.index, name='index'),
     url(r'^openid/', include('openid.urls')),
     url(r'^cdmi/', include('cdmi.urls')),
     url(r'^admin/', admin.site.urls),

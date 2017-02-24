@@ -13,9 +13,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import default_storage
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .models import Site, StorageType
-from .cdmi import get_status
+from . import cdmi
 
 logger = logging.getLogger(__name__)
 storage = default_storage
@@ -75,6 +76,23 @@ def upload(request):
 
     return redirect('cdmi:browse')
 
+def _set_object_capabilities(o, status):
+    capabilities_uri = status.get('capabilitiesURI', '')
+    metadata = status['metadata']
+
+    o.capabilities_name = capabilities_uri.rsplit('/', 1)[-1]
+    o.capabilities_latency = metadata.get('cdmi_latency_provided','')
+    o.capabilities_redundancy = metadata.get('cdmi_data_redundancy_provided','')
+    o.capabilities_geolocation = metadata.get('cdmi_geographic_placement_provided','')
+    o.capabilities_storage_lifetime = metadata.get('cdmi_data_storage_lifetime_provided','')
+    o.capabilities_association_time = metadata.get('cdmi_capability_association_time','')
+    o.capabilities_throughput = metadata.get('cdmi_throughput_provided','')
+    o.capabilities_allowed = metadata.get('cdmi_capabilities_allowed_provided','')
+    o.capabilities_lifetime = metadata.get('cdmi_capability_lifetime_provided','')
+    o.capabilities_lifetime_action = metadata.get('cdmi_capability_lifetime_action_provided','')
+
+    return o
+
 @login_required(login_url='/openid/login')
 def browse(request):
     username = request.user.username
@@ -93,26 +111,16 @@ def browse(request):
     for d in dirs:
         o = FileObject(d, 'Directory')
         p = os.path.join(path, d)
-        cdmi_status = get_status(p)
+        status = cdmi.get_status(p, request)
 
-        capabilities_uri = cdmi_status.get('capabilitiesURI', '')
-        o.capabilities_name = capabilities_uri.rsplit('/', 1)[-1]
-        o.capabilities_latency = cdmi_status['metadata'].get('cdmi_latency_provided','')
-        o.capabilities_redundancy = cdmi_status['metadata'].get('cdmi_data_redundancy_provided','')
-        o.capabilities_geolocation = cdmi_status['metadata'].get('cdmi_geographic_placement_provided','')
-        object_list.append(o)
-    
+        object_list.append(_set_object_capabilities(o, status))
+
     for f in files:
         o = FileObject(f, 'File')
         p = os.path.join(path, f)
-        cdmi_status = get_status(p)
+        status = cdmi.get_status(p, request)
 
-        capabilities_uri = cdmi_status.get('capabilitiesURI', '')
-        o.capabilities_name = capabilities_uri.rsplit('/', 1)[-1]
-        o.capabilities_latency = cdmi_status['metadata'].get('cdmi_latency_provided','')
-        o.capabilities_redundancy = cdmi_status['metadata'].get('cdmi_data_redundancy_provided','')
-        o.capabilities_geolocation = cdmi_status['metadata'].get('cdmi_geographic_placement_provided','')
-        object_list.append(o)
+        object_list.append(_set_object_capabilities(o, status))
 
     context = {
             'object_list': object_list,
@@ -128,55 +136,30 @@ def sites(request):
 
     json_response = dict()
 
-    all_sites = []
+    all_capabilities = []
 
     for site in Site.objects.all():
-        url = urljoin(site.site_uri, 'cdmi_capabilities/dataobject')
-        try:
-            r = requests.get(url, auth=('restadmin','restadmin'))
-            logger.debug(r.json())
-        except (requests.exceptions.ConnectionError):
-            logger.warning("Could not connect to {}".format(url))
-            break 
-        if r.status_code == 200:
-            capabilities = r.json()
-            try:
-                for child in capabilities['children']:
-                    url = urljoin(site.site_uri, 'cdmi_capabilities/dataobject/{}'.format(child))
-                    r = requests.get(url, auth=('restadmin','restadmin'))
-                    logger.debug(r.json())
-                    if r.status_code == 200:
-                        profile = r.json()
-                        copies = profile['metadata']['cdmi_data_redundancy']
-                        latency = profile['metadata']['cdmi_latency']
-                        location = profile['metadata']['cdmi_geographic_placement']
-                        transitions = profile['metadata']['cdmi_capabilities_allowed']
-                        transitions = [ x.rsplit('/', 1)[-1] for x in transitions ]
-
-                        datapath = 'http://localhost:8000/cdmi/browse'
-
-                        qos_profile = dict(name=child, latency=latency, copies=copies, location=location,
-                                qos=[], transitions=transitions, url=url, datapath=datapath)
-
-
-                        if int(latency) < 200:
-                            qos_profile['qos'].append('processing')
-                        if int(copies) > 3:
-                            qos_profile['qos'].append('archiving')
-
-                        all_sites.append(qos_profile)
-            except (KeyError):
-                logger.warning('error for {}'.format(url))
-
+        all_capabilities += cdmi.get_all_capabilities(site.site_uri, request)
+        
     if filter == 'processing':
-        json_response['sites'] = [x for x in all_sites if 'processing' in x['qos']]
+        json_response['sites'] = [x for x in all_capabilities if 'processing' in x['qos']]
 
     if filter == 'archiving':
-        json_response['sites'] = [x for x in all_sites if 'archiving' in x['qos']]
+        json_response['sites'] = [x for x in all_capabilities if 'archiving' in x['qos']]
 
     return JsonResponse(json_response)
 
-class IndexView(generic.ListView):
+class IndexView(LoginRequiredMixin, generic.ListView):
     template_name = 'cdmi/index.html'
+    login_url = '/openid/login'
+    redirect_field_name = ''
+
+    model = Site
 
     context_object_name = 'storage_list'
+
+    def get_context_data(self, **kwargs):
+        context = super(IndexView, self).get_context_data(**kwargs)
+        context['sites_endpoint'] = settings.SITES_ENDPOINT
+
+        return context

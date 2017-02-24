@@ -1,7 +1,7 @@
 {% load static %}
 
 <link rel="stylesheet" type="text/css" href="{% static 'cdmi/css/custom.css' %}" />
-<link rel="stylesheet" type="text/css" href="{% static 'cdmi/css/bootstrap.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'cdmi/css/bootstrap.min.css' %}" />
 
 <div class="container">
     <nav class="navbar navbar-default">
@@ -40,6 +40,7 @@
 </tbody>
 </table>
 {% endif %}
+<div id="loadingDiv" align="center"><img src="{% static 'cdmi/img/loader.gif' %}" alt="loading"></img></div>
 {% if object_list %}
 <table class="table" style="font-size:14px">
     <thead><tr>
@@ -75,23 +76,31 @@
             </a>
             <div class="collapse" id="{{ o.name|slugify }}">
                 <div>
+		    <p>Associated at: {{ o.capabilities_association_time }}</p>
+		    <p>Data lifetime: {{ o.capabilities_storage_lifetime }}</p>
+		    <p>QoS lifetime: {{ o.capabilities_lifetime }}</p>
+		    <p>{{ o.capabilities_lifetime_action }}</p>
+		    <hr/>
                     <p>Latency: {{ o.capabilities_latency }}</p>
+		    <p>Throughput: {{ o.capabilities_throughput }}</p>
                     <p>Redundancy: {{ o.capabilities_redundancy }}</p>
                     <p>Geolocation: {{ o.capabilities_geolocation }}</p>
                 </div>
             </div>
         </td>
         <td>
+	{% for allowed in o.capabilities_allowed %}
            <div class="dropdown">
           <!-- <li class="dropdown"> -->
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Supported <span class="caret"></span></a>
             <ul class="dropdown-menu">
-              <li><a href="#">profile2</a></li>
+	    <li><a class="btn btn-link" type="button" onclick='getCapabilities("{{ allowed }}");return false;'>{{ allowed|cut:"/cdmi_capabilities/" }}</a></li>
               <!-- <li role="separator" class="divider"></li> -->
               <!-- <li class="dropdown-header">Nav header</li> -->
             </ul>
           <!-- </li> -->
            </div>
+	{% endfor %}
         </td>
         <form action="{% url 'cdmi:delete' %}" method="post">
         {% csrf_token %}
@@ -106,6 +115,7 @@
     </tbody>
 </table>
 {% endif %}
+</div>
 
 <!-- Modal -->
 <div class="modal fade" id="upload" tabindex="-1" role="dialog" aria-labelledby="uploadLabel">
@@ -132,8 +142,44 @@
     </div>
   </div>
 </div>
+</div>
+
+<div class="modal fade" id="changeqos" tabindex="-1" role="dialog" aria-labelledby="changeqosLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="changeqosLabel">Change Quality-of-Service</h4>
+      </div>
+      <div class="modal-body">
+	  <div>
+          </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-dismiss="modal">Cancle</button>
+        <button type="submit" class="btn btn-success">Change</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
 
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 <script src="{% static 'cdmi/js/jquery-3.1.1.min.js' %}"></script>
 <!-- Include all compiled plugins (below), or include individual files as needed -->
 <script src="{% static 'cdmi/js/bootstrap.min.js' %}"></script>
+
+<script>
+function getCapabilities(url) {
+    $('#changeqos').modal('show');
+};
+
+var $loading = $('#loadingDiv').hide();
+$(document)
+    .ajaxStart(function () {
+      $loading.show();
+     })
+    .ajaxStop(function () {
+      $loading.hide();
+     });
+</script>

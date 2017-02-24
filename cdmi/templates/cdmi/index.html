@@ -1,7 +1,7 @@
 {% load static %}
 
 <link rel="stylesheet" type="text/css" href="{% static 'cdmi/css/custom.css' %}" />
-<link rel="stylesheet" type="text/css" href="{% static 'cdmi/css/bootstrap.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'cdmi/css/bootstrap.min.css' %}" />
 
 <div class="container">
     <h1 align="center">Choose storage type</h1>
@@ -16,7 +16,7 @@
     </tr>
 </tbody>
 </table>
-
+<div id="loadingDiv" align="center"><img src="{% static 'cdmi/img/loader.gif' %}" alt="loading"></img></div>
 <!-- Sites grid -->
 <table class="table" data-bind="visible: $root.chosenSitesData().length > 0">
     <thead><tr>
@@ -69,6 +69,16 @@
 <script src="{% static 'cdmi/js/bootstrap.min.js' %}"></script>
 <script src="{% static 'cdmi/js/knockout-3.4.1.js' %}"></script>
 <script>
+var $loading = $('#loadingDiv').hide();
+$(document)
+    .ajaxStart(function () {
+      $loading.show();
+     })
+    .ajaxStop(function () {
+      $loading.hide();
+     });
+</script>
+<script>
     function StorageSitesViewModel() {
         // Data
     var self = this;
@@ -83,7 +93,7 @@
         self.chosenSitesData.removeAll();
         self.chosenSiteData(null);
 
-        $.get('http://localhost:8000/cdmi/sites', { filter: filter }, function(data) {
+	$.get("{{ sites_endpoint  }}", { filter: filter }, function(data) {
             $.each(data.sites, function(index, value) {
                 self.chosenSitesData.push(value);
             });
@@ -94,7 +104,6 @@
         self.chosenFilterId(site.filter);
         self.chosenSitesData.removeAll();
 
-        //$.get('http://localhost:8000/cdmi/sites', { name: site.name }, self.chosenSiteData);
         self.chosenSiteData(site);
     };
 
@@ -104,8 +113,6 @@
         });
     };
 
-    // Show inbox by default
-    //self.goToFolder('Inbox');
     };
     ko.applyBindings(new StorageSitesViewModel());
 </script>

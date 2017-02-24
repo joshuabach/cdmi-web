@@ -58,7 +58,7 @@ LOGGING = {
 #  GRAPPELLI_ADMIN_TITLE = 'CDMI Filebrowser'
 
 # OpenId Connect
-OPENID_LOGIN_REDIRECT = 'cdmi:browse'
+OPENID_LOGIN_REDIRECT = 'cdmi:index'
 
 # Filebrowser
 #  FILEBROWSER_DIRECTORY = ''
@@ -66,8 +66,12 @@ OPENID_LOGIN_REDIRECT = 'cdmi:browse'
 
 MEDIA_ROOT = '/tmp/cdmi/'
 
-# CDMI
+# Local CDMI endpoint
 CDMI_URI = 'http://localhost:8888/'
+# Local data access endpoint
+DATA_ENDPOINT = 'https://cdmi-web.data.kit.edu/cdmi/browse'
+# Local sites filter endpoint
+SITES_ENDPOINT = 'https://cdmi-web.data.kit.edu/cdmi/sites' 
 
 # Application definition
 
