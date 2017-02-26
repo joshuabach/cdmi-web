@@ -11,14 +11,15 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-def _query_cdmi(url, request):
-    access_token = request.session['access_token']
-    headers = {'Authorization': 'Bearer {}'.format(access_token)}
+def _update_qos_cdmi(url, request, body):
+    #access_token = request.session['access_token']
+    #headers = {'Authorization': 'Bearer {}'.format(access_token)}
+    headers = {'Content-Type': 'application/cdmi-object'}
 
     json_response = dict()
     try:
-        #r = requests.get(url, auth=('restadmin', 'restadmin')) # headers=headers)
-        r = requests.get(url, headers=headers)
+        r = requests.put(url, auth=('restadmin', 'restadmin'), json=body, headers=headers)
+        #r = requests.get(url, headers=headers)
         json_response = r.json()
         logger.debug(json_response)
     except (ConnectionError):
@@ -27,6 +28,32 @@ def _query_cdmi(url, request):
         logger.warning('Error decoding JSON from CDMI host {}'.format(url))
 
     return json_response
+
+def _query_cdmi(url, request):
+    #access_token = request.session['access_token']
+    #headers = {'Authorization': 'Bearer {}'.format(access_token)}
+
+    json_response = dict()
+    try:
+        r = requests.get(url, auth=('restadmin', 'restadmin')) # headers=headers)
+        #r = requests.get(url, headers=headers)
+        json_response = r.json()
+        logger.debug(json_response)
+    except (ConnectionError):
+        logger.warning('Could not connect to CDMI host {}'.format(url))
+    except (JSONDecodeError):
+        logger.warning('Error decoding JSON from CDMI host {}'.format(url))
+
+    return json_response
+
+def put_capabilities_class(path, request, capabilities):
+    cdmi_uri = settings.CDMI_URI
+    url = urljoin(cdmi_uri, path)
+
+    body = {'capabilitiesURI': capabilities}
+    response = _update_qos_cdmi(url, request, body)
+
+    return response
 
 def get_status(path, request):
     cdmi_uri = settings.CDMI_URI
@@ -50,7 +77,7 @@ def get_capabilities_class(url, request, classes=None):
 
         datapath = ''
         if urlsplit(url).netloc == 'localhost:8888':
-            datapath = 'https://cdmi-web.data.kit.edu/cdmi/browse'
+            datapath = settings.DATA_ENDPOINT
 
         qos = []
         if int(latency) < 200:

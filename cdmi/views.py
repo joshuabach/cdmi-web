@@ -2,7 +2,7 @@ import os
 import logging
 import requests
 
-from requests.compat import urljoin
+from requests.compat import urljoin, urlsplit
 
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
@@ -58,6 +58,25 @@ def handle_uploaded_file(request):
         for chunk in f.chunks():
             destination.write(chunk)
 
+def handle_update_object(request):
+    path = request.POST['path']
+    qos = request.POST['qos']
+    capabilities = urlsplit(qos).path
+
+    response = cdmi.put_capabilities_class(path, request, capabilities)
+
+    logger.debug(response)
+
+@login_required(login_url='/openid/login')
+def update(request):
+    if request.method == 'POST':
+        if 'qos' in request.POST and 'path' in request.POST:
+            logger.debug("Change {} to {}".format(request.POST['path'], request.POST['qos']))
+            handle_update_object(request)
+            messages.success(request, '{} updated'.format(request.POST['path']))
+
+    return redirect('cdmi:browse')
+
 @login_required(login_url='/openid/login')
 def delete(request):
     if request.method == 'POST':
@@ -90,6 +109,8 @@ def _set_object_capabilities(o, status):
     o.capabilities_allowed = metadata.get('cdmi_capabilities_allowed_provided','')
     o.capabilities_lifetime = metadata.get('cdmi_capability_lifetime_provided','')
     o.capabilities_lifetime_action = metadata.get('cdmi_capability_lifetime_action_provided','')
+    o.capabilities_target = metadata.get('cdmi_capabilities_target', '')
+    o.capabilities_polling = metadata.get('cdmi_recommended_polling_interval','')
 
     return o
 
@@ -100,8 +121,17 @@ def browse(request):
     create_if_not_exists(storage_path)
     path = storage_path
 
-    if 'path' in request.GET and 'name' in request.GET:
-        path = os.path.join(path, request.GET['path'], request.GET['name'])
+    if 'chdir' in request.GET:
+        if 'path' in request.GET and 'name' in request.GET:
+            path = os.path.join(path, request.GET['path'], request.GET['name'])
+
+    object_info = None
+    if 'info' in request.GET:
+        if 'path' in request.GET and 'name' in request.GET:
+            url = urljoin(settings.CDMI_URI, request.GET['info'])
+            object_info = cdmi.get_capabilities_class(url, request)
+            object_info['url'] = url
+            object_info['path'] = os.path.join(path, request.GET['name'])
 
     logger.debug("current path {}".format(path))
 
@@ -125,7 +155,8 @@ def browse(request):
     context = {
             'object_list': object_list,
             'username': username,
-            'path': os.path.relpath(path, storage_path)
+            'path': os.path.relpath(path, storage_path),
+            'object_info': object_info
         }
 
     return render(request, 'cdmi/browse.html', context)

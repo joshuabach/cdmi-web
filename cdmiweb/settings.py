@@ -69,9 +69,9 @@ MEDIA_ROOT = '/tmp/cdmi/'
 # Local CDMI endpoint
 CDMI_URI = 'http://localhost:8888/'
 # Local data access endpoint
-DATA_ENDPOINT = 'https://cdmi-web.data.kit.edu/cdmi/browse'
+DATA_ENDPOINT = 'http://localhost:8000/cdmi/browse'
 # Local sites filter endpoint
-SITES_ENDPOINT = 'https://cdmi-web.data.kit.edu/cdmi/sites' 
+SITES_ENDPOINT = 'http://localhost:8000/cdmi/sites' 
 
 # Application definition
 

@@ -30,7 +30,7 @@
     </tr></thead>
     <tbody data-bind="foreach: chosenSitesData">
         <tr data-bind="click: $root.goToSite">
-            <td data-bind="text: name"></td>
+            <td><a data-bind="text: name"></a></td>
             <td data-bind="text: latency"></td>
             <td data-bind="text: copies"></td>
             <td data-bind="text: location"></td>

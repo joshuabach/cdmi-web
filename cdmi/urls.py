@@ -7,6 +7,7 @@ urlpatterns = [
     url(r'^$', views.IndexView.as_view(), name='index'),
     url(r'^browse', views.browse, name='browse'),
     url(r'^upload', views.upload, name='upload'),
+    url(r'^update', views.update, name='update'),
     url(r'^delete', views.delete, name='delete'),
     url(r'^sites', views.sites, name='sites'),
 ]
