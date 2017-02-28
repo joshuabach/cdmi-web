@@ -4,6 +4,11 @@ class Site(models.Model):
     site_name = models.CharField(max_length=200)
     site_uri = models.URLField()
     logo_uri = models.URLField(blank=True)
+    auth = models.CharField(default='bearer',
+                            choices=[('bearer', 'Bearer token authentication'),
+                                     # Useful for testing
+                                     ('basic', 'HTTP basic authentication with restadmin:restadmin')],
+                            max_length=10)
 
     last_modified = models.DateTimeField(auto_now=True)
 
