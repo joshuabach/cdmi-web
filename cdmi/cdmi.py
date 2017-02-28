@@ -9,17 +9,37 @@ from json import JSONDecodeError
 from django.contrib import messages
 from django.conf import settings
 
+from .models import Site
+
 logger = logging.getLogger(__name__)
 
+
+def _auth_method(url):
+    # TODO It's a bit hacky to reverse engineere the Site from the url
+    urlcomponents = urlsplit(url)
+    site_uri = urlcomponents.scheme + '://' + urlcomponents.netloc
+    method = Site.objects.get(site_uri=site_uri).auth
+    logger.debug('Using {} authentication to access {}'.format(method, url))
+    return method
+
+
+def _request_auth_kwargs(url, request):
+    if _auth_method(url) == 'basic':
+        return {'auth': ('restadmin', 'restadmin'),
+                'headers': {}}
+    else:
+        return {'headers': {'Authorization': 'Bearer {}'.format(
+            request.session['access_token'])}}
+
+
 def _update_qos_cdmi(url, request, body):
-    #access_token = request.session['access_token']
-    #headers = {'Authorization': 'Bearer {}'.format(access_token)}
-    headers = {'Content-Type': 'application/cdmi-object'}
+    request_kwargs = _request_auth_kwargs(url, request)
+    request_kwargs['headers']['Content-Type'] = 'application/cdmi-object'
+    request_kwargs['json'] = body
 
     json_response = dict()
     try:
-        r = requests.put(url, auth=('restadmin', 'restadmin'), json=body, headers=headers)
-        #r = requests.get(url, headers=headers)
+        r = requests.put(url, **request_kwargs)
         json_response = r.json()
         logger.debug(json_response)
     except (ConnectionError):
@@ -30,13 +50,11 @@ def _update_qos_cdmi(url, request, body):
     return json_response
 
 def _query_cdmi(url, request):
-    #access_token = request.session['access_token']
-    #headers = {'Authorization': 'Bearer {}'.format(access_token)}
+    request_kwargs = _request_auth_kwargs(url, request)
 
     json_response = dict()
     try:
-        r = requests.get(url, auth=('restadmin', 'restadmin')) # headers=headers)
-        #r = requests.get(url, headers=headers)
+        r = requests.get(url, **request_kwargs)
         json_response = r.json()
         logger.debug(json_response)
     except (ConnectionError):
