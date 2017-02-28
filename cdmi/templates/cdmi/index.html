@@ -1,8 +1,7 @@
+{% extends "cdmi/root.html" %}
 {% load static %}
 
-<link rel="stylesheet" type="text/css" href="{% static 'cdmi/css/custom.css' %}" />
-<link rel="stylesheet" type="text/css" href="{% static 'cdmi/css/bootstrap.min.css' %}" />
-
+{% block body %}
 <div class="container">
     <h1 align="center">Choose storage type</h1>
 
@@ -116,3 +115,4 @@ $(document)
     };
     ko.applyBindings(new StorageSitesViewModel());
 </script>
+{% endblock %}
