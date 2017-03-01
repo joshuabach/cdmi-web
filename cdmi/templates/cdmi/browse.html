@@ -17,6 +17,7 @@
       </div>
       <div id="navbar" class="navbar-collapse collapse">
         <ul class="nav navbar-nav navbar-right">
+          <li><a href="#" data-toggle="modal" data-target="#mkdir">Create Directory</a></li>
           <li><a href="#" data-toggle="modal" data-target="#upload">Upload</a></li>
         </ul>
       </div><!--/.nav-collapse -->
@@ -170,6 +171,31 @@
     </div>
   </div>
 </div>
+</div>
+
+<div class="modal fade" id="mkdir" tabindex="-1" role="dialog" aria-labelledby="mkdirLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="mkdirLabel">Create Directory</h4>
+      </div>
+      <div class="modal-body">
+        <form action="{% url 'cdmi:mkdir' %}" method="post">
+          {% csrf_token %}
+          <div class="form-group">
+            <input type="text" id="name" name="name">
+            <p class="help-block">Name of directory</p>
+            <input type="hidden" name="path" value="{{ path }}" />
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Create</button>
+        </form>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="modal fade" id="changeqos" tabindex="-1" role="dialog" aria-labelledby="changeqosLabel">

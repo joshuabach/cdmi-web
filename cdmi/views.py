@@ -58,6 +58,19 @@ def handle_uploaded_file(request):
         for chunk in f.chunks():
             destination.write(chunk)
 
+
+def handle_create_directory(request):
+    path = request.POST['path']
+    name = request.POST['name']
+
+    new_dir = os.path.join(user_path(request), path, name)
+    os_path = os.path.join(settings.MEDIA_ROOT, new_dir)
+
+    logger.debug("Create directory {}".format(os_path))
+
+    os.makedirs(os_path, exist_ok=True)
+
+
 def handle_update_object(request):
     path = request.POST['path']
     qos = request.POST['qos']
@@ -94,6 +107,18 @@ def upload(request):
             messages.success(request, '{} uploaded'.format(request.FILES['file'].name))
 
     return redirect('cdmi:browse')
+
+
+@login_required(login_url='/openid/login')
+def mkdir(request):
+    if request.method == 'POST':
+        if 'path' in request.POST and 'name' in request.POST:
+            handle_create_directory(request)
+            messages.success(request, '{}/{} created'.format(
+                request.POST['path'], request.POST['name']))
+
+    return redirect('cdmi:browse')
+
 
 def _set_object_capabilities(o, status):
     capabilities_uri = status.get('capabilitiesURI', '')
