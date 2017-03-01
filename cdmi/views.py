@@ -1,6 +1,7 @@
 import os
 import logging
 import requests
+import shutil
 
 from requests.compat import urljoin, urlsplit
 
@@ -42,7 +43,12 @@ def handle_delete_object(request):
 
     logger.debug("Delete {}".format(storage_path))
 
-    storage.delete(storage_path)
+    try:
+        storage.delete(storage_path)
+    except IsADirectoryError:
+        # https://code.djangoproject.com/ticket/27836
+        shutil.rmtree(storage.path(storage_path))
+
 
 def handle_uploaded_file(request):
     f = request.FILES['file']
