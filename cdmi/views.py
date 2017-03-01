@@ -94,7 +94,10 @@ def update(request):
             handle_update_object(request)
             messages.success(request, '{} updated'.format(request.POST['path']))
 
-    return redirect('cdmi:browse')
+    if request.method == 'POST' and 'next' in request.POST:
+        return redirect(request.POST['next'])
+    else:
+        return redirect('cdmi:browse')
 
 @login_required(login_url='/openid/login')
 def delete(request):
@@ -103,7 +106,10 @@ def delete(request):
             handle_delete_object(request)
             messages.success(request, '{} deleted'.format(request.POST['name']))
 
-    return redirect('cdmi:browse')
+    if request.method == 'POST' and 'next' in request.POST:
+        return redirect(request.POST['next'])
+    else:
+        return redirect('cdmi:browse')
 
 @login_required(login_url='/openid/login')
 def upload(request):
@@ -112,7 +118,10 @@ def upload(request):
             handle_uploaded_file(request)
             messages.success(request, '{} uploaded'.format(request.FILES['file'].name))
 
-    return redirect('cdmi:browse')
+    if request.method == 'POST' and 'next' in request.POST:
+        return redirect(request.POST['next'])
+    else:
+        return redirect('cdmi:browse')
 
 
 @login_required(login_url='/openid/login')
@@ -123,7 +132,11 @@ def mkdir(request):
             messages.success(request, '{}/{} created'.format(
                 request.POST['path'], request.POST['name']))
 
-    return redirect('cdmi:browse')
+    if request.method == 'POST' and 'next' in request.POST:
+        return redirect(request.POST['next'])
+    else:
+        return redirect('cdmi:browse')
+
 
 
 def _set_object_capabilities(o, status):
@@ -152,6 +165,8 @@ def browse(request):
     create_if_not_exists(storage_path)
     path = storage_path
 
+    context = dict()
+
     if 'chdir' in request.GET:
         if 'path' in request.GET and 'name' in request.GET:
             path = os.path.join(path, request.GET['path'], request.GET['name'])
@@ -163,6 +178,7 @@ def browse(request):
             object_info = cdmi.get_capabilities_class(url, request)
             object_info['url'] = url
             object_info['path'] = os.path.join(path, request.GET['name'])
+            context['next_url'] = request.GET['nextbutone']
 
     logger.debug("current path {}".format(path))
 
@@ -183,12 +199,12 @@ def browse(request):
 
         object_list.append(_set_object_capabilities(o, status))
 
-    context = {
+    context.update({
             'object_list': object_list,
             'username': username,
             'path': os.path.relpath(path, storage_path),
             'object_info': object_info
-        }
+        })
 
     return render(request, 'cdmi/browse.html', context)
 
