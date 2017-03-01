@@ -1,5 +1,6 @@
 {% extends "cdmi/root.html" %}
 {% load static %}
+{% load utils %}
 
 {% block body %}
 <div class="container">
@@ -15,9 +16,6 @@
         <a class="navbar-brand" href="#">/{% if path != '.' %}{{ path }}{% endif %}</a>
       </div>
       <div id="navbar" class="navbar-collapse collapse">
-        <ul class="nav navbar-nav">
-            <li><a href="{% url 'cdmi:browse' %}">Go back</a></li>
-        </ul>
         <ul class="nav navbar-nav navbar-right">
           <li><a href="#" data-toggle="modal" data-target="#upload">Upload</a></li>
         </ul>
@@ -39,7 +37,6 @@
 </table>
 {% endif %}
 <div id="loadingDiv" align="center"><img src="{% static 'cdmi/img/loader.gif' %}" alt="loading"></img></div>
-{% if object_list %}
 <table class="table" style="font-size:14px">
     <thead><tr>
         <th>Name</th>
@@ -50,6 +47,22 @@
         <th></th>
     </thead>
     <tbody>
+      <tr>
+        <form action="{% url 'cdmi:browse' %}" method="get">
+          {% csrf_token %}
+          <input type="hidden" name="path" value="{{ path|dirname|dirname }}" />
+          <input type="hidden" name="name" value="{{ path|dirname|basename }}" />
+          <input type="hidden" name="chdir" value="chdir" />
+          <td>
+            <button type="submit" class="btn btn-link">..</button>
+          </td>
+        </form>
+        <td>Directory</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      <tr>
     {% for o in object_list %}
     <tr>
         {% if o.type == "File" %}
@@ -130,7 +143,6 @@
     {% endfor %}
     </tbody>
 </table>
-{% endif %}
 </div>
 
 <!-- Modal -->
