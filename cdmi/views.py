@@ -174,6 +174,7 @@ def browse(request):
     object_info = None
     if 'info' in request.GET:
         if 'path' in request.GET and 'name' in request.GET:
+            path = os.path.join(path, request.GET['path'])
             url = urljoin(settings.CDMI_URI, request.GET['info'])
             object_info = cdmi.get_capabilities_class(url, request)
             object_info['url'] = url
