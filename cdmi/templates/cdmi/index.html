@@ -51,7 +51,7 @@
                     <td>CDMI URL</td>
                     <td data-bind="text: url"></td>
                 </tr>
-                <tr>
+                <tr data-bind="if: datapath">
                     <td>Data Access</td>
                     <td><a data-bind="attr: { href: datapath }">Go to site</td>
                 </tr>

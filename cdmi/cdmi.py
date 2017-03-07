@@ -93,7 +93,7 @@ def get_capabilities_class(url, request, classes=None):
         transitions = capabilities['metadata']['cdmi_capabilities_allowed']
         transitions = [ x.rsplit('/', 1)[-1] for x in transitions ]
 
-        datapath = ''
+        datapath = None
         if urlsplit(url).netloc == urlsplit(settings.CDMI_URI).netloc:
             datapath = settings.DATA_ENDPOINT
 
