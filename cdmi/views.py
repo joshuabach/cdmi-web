@@ -241,5 +241,6 @@ class IndexView(LoginRequiredMixin, generic.ListView):
         context = super(IndexView, self).get_context_data(**kwargs)
         context['sites_endpoint'] = settings.SITES_ENDPOINT
         context['username'] = self.request.user.username
+        context['filters'] = [f for f, _ in settings.STORAGE_TYPES]
 
         return context

@@ -97,14 +97,14 @@ def get_capabilities_class(url, request, classes=None):
         if urlsplit(url).netloc == urlsplit(settings.CDMI_URI).netloc:
             datapath = settings.DATA_ENDPOINT
 
-        qos = []
-        if int(latency) < 200:
-            qos.append('processing')
-        if int(copies) > 2:
-            qos.append('archiving')
+        qos = [storage_type
+               for storage_type, predicate in settings.STORAGE_TYPES
+               if predicate(capabilities)]
 
         capabilities_class = dict(name=name, latency=latency, copies=copies, location=location,
                 qos=qos, transitions=transitions, url=url, datapath=datapath)
+
+        logger.debug('QoS for {}: {}'.format(name, qos))
 
     except (KeyError):
         logger.warning('Wrong or missing CDMI capabilities at {}'.format(url))

@@ -81,7 +81,11 @@ $(document)
     function StorageSitesViewModel() {
         // Data
     var self = this;
-    self.filters = ['processing', 'archiving'];
+    self.filters = [];
+    {% for filter in filters %}
+    self.filters.push('{{ filter }}');
+    {% endfor %}
+
     self.chosenFilterId = ko.observable();
     self.chosenSitesData = ko.observableArray();
     self.chosenSiteData = ko.observable();

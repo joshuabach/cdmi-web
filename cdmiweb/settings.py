@@ -73,6 +73,11 @@ DATA_ENDPOINT = 'http://localhost:8000/cdmi/browse'
 # Local sites filter endpoint
 SITES_ENDPOINT = 'http://localhost:8000/cdmi/sites' 
 
+STORAGE_TYPES = [
+    ('processing', lambda cap: int(cap['metadata']['cdmi_latency']) < 200),
+    ('archiving', lambda cap: int(cap['metadata']['cdmi_data_redundancy']) > 2)
+]
+
 # Application definition
 
 INSTALLED_APPS = [
