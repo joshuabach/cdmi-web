@@ -94,7 +94,7 @@ def get_capabilities_class(url, request, classes=None):
         transitions = [ x.rsplit('/', 1)[-1] for x in transitions ]
 
         datapath = ''
-        if urlsplit(url).netloc == 'localhost:8888':
+        if urlsplit(url).netloc == urlsplit(settings.CDMI_URI).netloc:
             datapath = settings.DATA_ENDPOINT
 
         qos = []
