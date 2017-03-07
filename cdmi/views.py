@@ -220,7 +220,9 @@ def sites(request):
     for site in Site.objects.all():
         all_capabilities += cdmi.get_all_capabilities(site.site_uri, request)
 
-    json_response['sites'] = [x for x in all_capabilities if filter in x['qos']]
+    json_response['sites'] = [x for x in all_capabilities
+                              if (filter == 'other' and not x['qos']
+                                  or filter in x['qos'])]
 
     return JsonResponse(json_response)
 
@@ -237,6 +239,6 @@ class IndexView(LoginRequiredMixin, generic.ListView):
         context = super(IndexView, self).get_context_data(**kwargs)
         context['sites_endpoint'] = settings.SITES_ENDPOINT
         context['username'] = self.request.user.username
-        context['filters'] = [f for f, _ in settings.STORAGE_TYPES]
+        context['filters'] = [f for f, _ in settings.STORAGE_TYPES] + ['other']
 
         return context
