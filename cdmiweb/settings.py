@@ -20,7 +20,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'dz9rat0y7n70aisb&!h&j2wc!vt&otw#delzb$g$ec8az*s#fz'
+# SECRET_KEY = 'dz9rat0y7n70aisb&!h&j2wc!vt&otw#delzb$g$ec8az*s#fz'
+SECRET_KEY = '1d117432ea7a42747b899a6fce5b60e8c6222891fbf501263cca5477e0932c6a'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -69,13 +70,13 @@ MEDIA_ROOT = '/tmp/cdmi/'
 # Local CDMI endpoint
 CDMI_URI = 'http://localhost:8888/'
 # Local data access endpoint
-DATA_ENDPOINT = 'http://localhost:8000/cdmi/browse'
+DATA_ENDPOINT = 'https://cdmi-web.data.kit.edu/cdmi/browse'
 # Local sites filter endpoint
-SITES_ENDPOINT = 'http://localhost:8000/cdmi/sites' 
+SITES_ENDPOINT = 'https://cdmi-web.data.kit.edu/cdmi/sites' 
 
 STORAGE_TYPES = [
     ('processing', lambda cap: int(cap['metadata']['cdmi_latency']) < 200),
-    ('archiving', lambda cap: int(cap['metadata']['cdmi_data_redundancy']) > 2)
+    ('archiving', lambda cap: int(cap['metadata']['cdmi_latency']) > 200)
 ]
 
 # Application definition

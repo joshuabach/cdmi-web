@@ -261,6 +261,7 @@
         {% csrf_token %}
         <input type="hidden" name="qos" value="{{ object_info.url }}"></input>
         <input type="hidden" name="path" value="{{ object_info.path }}"></input>
+	<input type="hidden" name="is_dir" value="{{ object_info.is_dir }}"></input>
         <input type="hidden" name="next" value="{{ next_url }}" />
         <button type="button" class="btn btn-danger" data-dismiss="modal">Cancle</button>
         <button type="submit" class="btn btn-success">Change</button>

@@ -35,6 +35,8 @@ def _request_auth_kwargs(url, request):
 def _update_qos_cdmi(url, request, body):
     request_kwargs = _request_auth_kwargs(url, request)
     request_kwargs['headers']['Content-Type'] = 'application/cdmi-object'
+    if 'is_dir' in request.POST and request.POST['is_dir'] == 'True':
+        request_kwargs['headers']['Content-Type'] = 'application/cdmi-container'
     request_kwargs['json'] = body
 
     json_response = dict()

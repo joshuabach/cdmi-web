@@ -179,6 +179,10 @@ def browse(request):
             object_info = cdmi.get_capabilities_class(url, request)
             object_info['url'] = url
             object_info['path'] = os.path.join(path, request.GET['name'])
+            abs_path = os.path.join(settings.MEDIA_ROOT, path, request.GET['name'])
+            logger.debug("Is dir? {} {}".format(abs_path, os.path.isdir(abs_path)))
+            object_info['is_dir'] = os.path.isdir(abs_path)
+
             context['next_url'] = request.GET['nextbutone']
 
     logger.debug("current path {}".format(path))
