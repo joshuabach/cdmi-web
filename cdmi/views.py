@@ -219,12 +219,8 @@ def sites(request):
 
     for site in Site.objects.all():
         all_capabilities += cdmi.get_all_capabilities(site.site_uri, request)
-        
-    if filter == 'processing':
-        json_response['sites'] = [x for x in all_capabilities if 'processing' in x['qos']]
 
-    if filter == 'archiving':
-        json_response['sites'] = [x for x in all_capabilities if 'archiving' in x['qos']]
+    json_response['sites'] = [x for x in all_capabilities if filter in x['qos']]
 
     return JsonResponse(json_response)
 
