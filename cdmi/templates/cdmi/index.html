@@ -89,18 +89,25 @@ $(document)
     self.chosenFilterId = ko.observable();
     self.chosenSitesData = ko.observableArray();
     self.chosenSiteData = ko.observable();
+    self.isLocked = ko.observable(false);
 
     // Behaviours    
     self.goToSites = function(filter) {
+      if (!self.isLocked()) {
+        self.isLocked(true);
+
         self.chosenFilterId(filter);
         self.chosenSitesData.removeAll();
         self.chosenSiteData(null);
 
-	$.get("{{ sites_endpoint  }}", { filter: filter }, function(data) {
+        $.get("{{ sites_endpoint  }}", { filter: filter }, function(data) {
             $.each(data.sites, function(index, value) {
                 self.chosenSitesData.push(value);
             });
+            self.isLocked(false);
         });
+
+      }
     };
 
     self.goToSite = function(site) {
