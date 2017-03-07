@@ -5,10 +5,10 @@
 <div class="container">
     <h1 align="center">Choose storage type</h1>
 
-<table class="table">
-    <tbody>
-    <tr data-bind="foreach: filters">
-        <td style="text-align: center;"data-bind="click: $root.goToSites">
+<table class="table hh">
+  <tbody>
+    <tr data-bind="foreach: filters" class="hh">
+        <td style="text-align: center;"data-bind="click: $root.goToSites" class="hh">
             <img data-bind="attr: {src: '/static/cdmi/img/' + $data + '.png'}" width=80></img>
             <strong data-bind="text: $data"></strong>
         </td>
@@ -17,7 +17,7 @@
 </table>
 <div id="loadingDiv" align="center"><img src="{% static 'cdmi/img/loader.gif' %}" alt="loading"></img></div>
 <!-- Sites grid -->
-<table class="table" data-bind="visible: $root.chosenSitesData().length > 0">
+<table class="table table-hover" data-bind="visible: $root.chosenSitesData().length > 0">
     <thead><tr>
             <th data-bind="click: $root.sortChosenSitesData('name')">Name</th>
             <th data-bind="click: $root.sortChosenSitesData('latency')">Access Latency</th>
@@ -28,7 +28,7 @@
             <!-- <th>URL</th> -->
     </tr></thead>
     <tbody data-bind="foreach: chosenSitesData">
-        <tr data-bind="click: $root.goToSite">
+        <tr data-bind="click: $root.goToSite" style="cursor: pointer;">
             <td><a data-bind="text: name"></a></td>
             <td data-bind="text: latency"></td>
             <td data-bind="text: copies"></td>
