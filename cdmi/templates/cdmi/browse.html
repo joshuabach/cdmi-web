@@ -4,7 +4,7 @@
 
 {% block body %}
 <div class="container">
-    <nav class="navbar navbar-default">
+  <nav class="navbar navbar-default">
     <div class="container-fluid">
       <div class="navbar-header">
         <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
@@ -22,23 +22,23 @@
         </ul>
       </div><!--/.nav-collapse -->
     </div><!--/.container-fluid -->
-    </nav>
+  </nav>
 </div>
 
 <div class="container">
-{% if messages %}
-<table class="table">
-<tbody>
-    {% for message in messages %}
-    <tr{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+  {% if messages %}
+  <table class="table">
+    <tbody>
+      {% for message in messages %}
+      <tr{% if message.tags %} class="{{ message.tags }}"{% endif %}>
         <td>{{ message }}</td>
-    </tr>
-    {% endfor %}
-</tbody>
-</table>
-{% endif %}
-<div id="loadingDiv" align="center"><img src="{% static 'cdmi/img/loader.gif' %}" alt="loading"></div>
-<table class="table" style="font-size:14px">
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+  <div id="loadingDiv" align="center"><img src="{% static 'cdmi/img/loader.gif' %}" alt="loading"></div>
+  <table class="table" style="font-size:14px">
     <thead><tr>
         <th>Name</th>
         <th>Type</th>
@@ -50,15 +50,15 @@
     <tbody>
       {% if path and path != '.' %}
       <tr>
-        <form action="{% url 'cdmi:browse' %}" method="get">
-          {% csrf_token %}
-          <input type="hidden" name="path" value="{{ path|dirname|dirname }}" />
-          <input type="hidden" name="name" value="{{ path|dirname|basename }}" />
-          <input type="hidden" name="chdir" value="chdir" />
-          <td>
+        <td>
+          <form action="{% url 'cdmi:browse' %}" method="get">
+            {% csrf_token %}
+            <input type="hidden" name="path" value="{{ path|dirname|dirname }}" />
+            <input type="hidden" name="name" value="{{ path|dirname|basename }}" />
+            <input type="hidden" name="chdir" value="chdir" />
             <button type="submit" class="btn btn-link">..</button>
-          </td>
-        </form>
+          </form>
+        </td>
         <td>Directory</td>
         <td></td>
         <td></td>
@@ -66,87 +66,89 @@
         <td></td>
       </tr>
       {% endif %}
-    {% for o in object_list %}
-    <tr>
+      {% for o in object_list %}
+      <tr>
         {% if o.type == "File" %}
         <td>
-            {{ o.name }}
+          {{ o.name }}
         </td>
         {% else %}
-        <form action="{% url 'cdmi:browse' %}" method="get">
-        {% csrf_token %}
+        <td>
+          <form action="{% url 'cdmi:browse' %}" method="get">
+            {% csrf_token %}
             <input type="hidden" name="path" value="{{ path }}" />
             <input type="hidden" name="name" value="{{ o.name }}" />
             <input type="hidden" name="chdir" value="chdir" />
-        <td>
             <button type="submit" class="btn btn-link">{{ o.name }}</button>
+          </form>
         </td>
-        </form>
         {% endif %}
         <td>
-            {{ o.type }}
+          {{ o.type }}
         </td>
         <td>
-            <a  data-toggle="collapse" href="#{{ o.name|slugify }}" aria-expanded="false" aria-controls="{{ o.name|slugify }}">
+          <a  data-toggle="collapse" href="#{{ o.name|slugify }}" aria-expanded="false" aria-controls="{{ o.name|slugify }}">
             {{ o.capabilities_name }}
-            </a>
-            <div class="collapse" id="{{ o.name|slugify }}">
-                <div>
-		    <p>Associated at: {{ o.capabilities_association_time }}</p>
-		    <p>Data lifetime: {{ o.capabilities_storage_lifetime }}</p>
-		    <p>QoS lifetime: {{ o.capabilities_lifetime }}</p>
-		    <p>{{ o.capabilities_lifetime_action }}</p>
-		    <hr/>
-                    <p>Latency: {{ o.capabilities_latency }}</p>
-		    <p>Throughput: {{ o.capabilities_throughput }}</p>
-                    <p>Redundancy: {{ o.capabilities_redundancy }}</p>
-                    <p>Geolocation: {{ o.capabilities_geolocation }}</p>
-                </div>
+          </a>
+          <div class="collapse" id="{{ o.name|slugify }}">
+            <div>
+		          <p>Associated at: {{ o.capabilities_association_time }}</p>
+		          <p>Data lifetime: {{ o.capabilities_storage_lifetime }}</p>
+		          <p>QoS lifetime: {{ o.capabilities_lifetime }}</p>
+		          <p>{{ o.capabilities_lifetime_action }}</p>
+		          <hr/>
+              <p>Latency: {{ o.capabilities_latency }}</p>
+		          <p>Throughput: {{ o.capabilities_throughput }}</p>
+              <p>Redundancy: {{ o.capabilities_redundancy }}</p>
+              <p>Geolocation: {{ o.capabilities_geolocation }}</p>
             </div>
+          </div>
         </td>
         <td>
-           <div class="dropdown">
-          <!-- <li class="dropdown"> -->
+          <div class="dropdown">
+            <!-- <li class="dropdown"> -->
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Supported <span class="caret"></span></a>
             <ul class="dropdown-menu">
-	    {% for allowed in o.capabilities_allowed %}
-                <form action="{% url 'cdmi:browse' %}" method="get">
+	            {% for allowed in o.capabilities_allowed %}
+              <form action="{% url 'cdmi:browse' %}" method="get">
                 {% csrf_token %}
                 <input type="hidden" name="path" value="{{ path }}" />
                 <input type="hidden" name="name" value="{{ o.name }}" />
                 <input type="hidden" name="info" value="{{ allowed }}" />
-                <input type="hidden" name="nextbutone" value="{{ request.get_full_path }}"
-                <li><button class="btn btn-link" type="submit">{{ allowed|cut:"/cdmi_capabilities/" }}</button></li>
-              <!-- <li role="separator" class="divider"></li> -->
-              <!-- <li class="dropdown-header">Nav header</li> -->
-                </form>
-            {% endfor %}
+                <input type="hidden" name="nextbutone" value="{{ request.get_full_path }}" />
+                <li>
+                  <button class="btn btn-link" type="submit">{{ allowed|cut:"/cdmi_capabilities/" }}</button>
+                </li>
+                <!-- <li role="separator" class="divider"></li> -->
+                <!-- <li class="dropdown-header">Nav header</li> -->
+              </form>
+              {% endfor %}
             </ul>
-          <!-- </li> -->
-           </div>
+            <!-- </li> -->
+          </div>
         </td>
         <td>
-            {% if o.capabilities_target %}
-            <img src="{% static 'cdmi/img/loader.gif' %}" alt="loading" width="20"></div>
-            {% endif %}
+          {% if o.capabilities_target %}
+          <img src="{% static 'cdmi/img/loader.gif' %}" alt="loading" width="20">
+          {% endif %}
         </td>
         <td>
-        <form action="{% url 'cdmi:delete' %}" method="post">
-        {% csrf_token %}
+          <form action="{% url 'cdmi:delete' %}" method="post">
+            {% csrf_token %}
             <input type="hidden" name="path" value="{{ path }}" />
             <input type="hidden" name="name" value="{{ o.name }}" />
             <button type="submit" style="border: none; background-color: white; color: red;">Delete</button>
+          </form>
         </td>
-        </form>
-    </tr>
-    {% if o.capabilities_polling %}
-    <script>
+      </tr>
+      {% if o.capabilities_polling %}
+      <script>
         setTimeout(function() { window.location.reload(1); }, {{ o.capabilities_polling }});
-    </script>
-    {% endif %}
-    {% endfor %}
+      </script>
+      {% endif %}
+      {% endfor %}
     </tbody>
-</table>
+  </table>
 </div>
 
 <!-- Modal -->
@@ -159,7 +161,7 @@
       </div>
       <div class="modal-body">
         <form action="{% url 'cdmi:upload' %}" method="post" enctype="multipart/form-data">
-        {% csrf_token %}
+          {% csrf_token %}
           <div class="form-group">
             <label for="file">Upload file</label>
             <input type="file" id="file" name="file">
@@ -167,14 +169,14 @@
             <input type="hidden" name="path" value="{{ path }}" />
             <input type="hidden" name="next" value="{{ request.get_full_path }}" />
           </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-primary">Upload</button>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Upload</button>
+          </div>
         </form>
       </div>
     </div>
   </div>
-</div>
 </div>
 
 <div class="modal fade" id="mkdir" tabindex="-1" role="dialog" aria-labelledby="mkdirLabel">
@@ -196,8 +198,8 @@
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
             <button type="submit" class="btn btn-primary">Create</button>
+          </div>
         </form>
-        </div>
       </div>
     </div>
   </div>
@@ -212,61 +214,42 @@
       </div>
       {% if object_info %}
       <div class="modal-body">
-          <table class="table" style="font-size:14px">
-              <thead>
-                  <tr>
-                      <th>
-                          {{ object_info.name }}
-                      </th>
-                      <th>
-                      </th>
-                  </tr>
-              </thead>
-              <tbody>
-                  <tr>
-                      <td>
-                          Latency:
-                      </td>
-                      <td>
-                          {{ object_info.latency }}
-                      </td>
-                  </tr>
-                  <tr>
-                      <td>
-                          Number of copies:
-                      </td>
-                      <td>
-                          {{ object_info.copies }}
-                      </td>
-                  </tr>
-                  <tr>
-                      <td>
-                          Locations:
-                      </td>
-                      <td>
-                          {{ object_info.location }}
-                      </td>
-                  </tr>
-                  <tr>
-                      <td>
-                          Allowed transitions:
-                      </td>
-                      <td>
-                          {{ object_info.transitions }}
-                      </td>
-                  </tr>
-              </tbody>
-          </table>
+        <table class="table" style="font-size:14px">
+          <thead>
+            <tr>
+              <th>{{ object_info.name }}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Latency:</td>
+              <td>{{ object_info.latency }}</td>
+            </tr>
+            <tr>
+              <td>Number of copies:</td>
+              <td>{{ object_info.copies }}</td>
+            </tr>
+            <tr>
+              <td>Locations:</td>
+              <td>{{ object_info.location }}</td>
+            </tr>
+            <tr>
+              <td>Allowed transitions:</td>
+              <td>{{ object_info.transitions }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
       <div class="modal-footer">
         <form action="{% url 'cdmi:update' %}" method="post">
-        {% csrf_token %}
-        <input type="hidden" name="qos" value="{{ object_info.url }}"></input>
-        <input type="hidden" name="path" value="{{ object_info.path }}"></input>
-	<input type="hidden" name="is_dir" value="{{ object_info.is_dir }}"></input>
-        <input type="hidden" name="next" value="{{ next_url }}" />
-        <button type="button" class="btn btn-danger" data-dismiss="modal">Cancle</button>
-        <button type="submit" class="btn btn-success">Change</button>
+          {% csrf_token %}
+          <input type="hidden" name="qos" value="{{ object_info.url }}"></input>
+          <input type="hidden" name="path" value="{{ object_info.path }}"></input>
+	        <input type="hidden" name="is_dir" value="{{ object_info.is_dir }}"></input>
+          <input type="hidden" name="next" value="{{ next_url }}" />
+          <button type="button" class="btn btn-danger" data-dismiss="modal">Cancle</button>
+          <button type="submit" class="btn btn-success">Change</button>
         </form>
       </div>
       {% else %}
@@ -276,7 +259,6 @@
       {% endif %}
     </div>
   </div>
-</div>
 </div>
 
 <script>
