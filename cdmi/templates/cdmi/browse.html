@@ -2,6 +2,29 @@
 {% load static %}
 {% load utils %}
 
+{% block head %}
+<script>
+  function getCapabilities(url) {
+      $('#changeqos').modal('show');
+  };
+
+  $(document).ready(function() {
+      var $loading = $('#loadingDiv').hide();
+      $(document)
+          .ajaxStart(function () {
+              $loading.show();
+          })
+          .ajaxStop(function () {
+              $loading.hide();
+          });
+
+      {% if object_info %}
+      $('#changeqos').modal('show');
+      {% endif %}
+  });
+</script>
+{% endblock %}
+
 {% block body %}
 <div class="container">
   <nav class="navbar navbar-default">
@@ -260,25 +283,4 @@
     </div>
   </div>
 </div>
-
-<script>
-function getCapabilities(url) {
-    $('#changeqos').modal('show');
-};
-
-var $loading = $('#loadingDiv').hide();
-$(document)
-    .ajaxStart(function () {
-      $loading.show();
-     })
-    .ajaxStop(function () {
-      $loading.hide();
-     });
-{% if object_info %}
-$(document)
-    .ready(function() {
-        $('#changeqos').modal('show');
-    });
-{% endif %}
-</script>
 {% endblock %}

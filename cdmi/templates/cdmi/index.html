@@ -8,13 +8,13 @@
 <link rel="stylesheet" type="text/css" href="{% static 'cdmi/css/bootstrap-sortable.css' %}" />
 
 <script>
-<!-- Hide all other details when one is shown -->
-$(document).ready(function() {
-  var $allDetails = $('#details');
-  $allDetails.on('show.bs.collapse','.collapse', function() {
-      $allDetails.find('.collapse.in').collapse('hide');
- });
-});
+  <!-- Hide all other details when one is shown -->
+  $(document).ready(function() {
+    var $allDetails = $('#details');
+    $allDetails.on('show.bs.collapse','.collapse', function() {
+        $allDetails.find('.collapse.in').collapse('hide');
+    });
+  });
 </script>
 {% endblock %}
 
