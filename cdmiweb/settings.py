@@ -68,8 +68,6 @@ MEDIA_ROOT = '/tmp/cdmi/'
 
 # Local CDMI endpoint
 CDMI_URI = 'http://localhost:8888/'
-# Local data access endpoint
-DATA_ENDPOINT = 'http://localhost:8000/cdmi/browse'
 
 STORAGE_TYPES = [
     ('processing', lambda cap: int(cap['metadata']['cdmi_latency']) < 200),

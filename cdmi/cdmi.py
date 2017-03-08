@@ -8,6 +8,7 @@ from json import JSONDecodeError
 
 from django.contrib import messages
 from django.conf import settings
+from django.shortcuts import reverse
 
 from .models import Site
 
@@ -98,7 +99,7 @@ def get_capabilities_class(url, access_token, classes=None):
 
         datapath = None
         if urlsplit(url).netloc == urlsplit(settings.CDMI_URI).netloc:
-            datapath = settings.DATA_ENDPOINT
+            datapath = reverse('cdmi:browse')
 
         qos = [storage_type
                for storage_type, predicate in settings.STORAGE_TYPES
