@@ -103,7 +103,7 @@ def get_capabilities_class(url, access_token, classes=None):
                if predicate(capabilities)]
 
         capabilities_class = dict(name=name, latency=latency, copies=copies, location=location,
-                qos=qos, transitions=transitions, url=url, datapath=datapath)
+                storage_types=qos, transitions=transitions, url=url, datapath=datapath)
 
         logger.debug('QoS for {}: {}'.format(name, qos))
 

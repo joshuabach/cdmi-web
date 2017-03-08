@@ -7,128 +7,78 @@
 <script src="{% static 'cdmi/js/bootstrap-sortable.js' %}"></script>
 <link rel="stylesheet" type="text/css" href="{% static 'cdmi/css/bootstrap-sortable.css' %}" />
 
+<script>
+<!-- Hide all other details when one is shown -->
+$(document).ready(function() {
+  var $allDetails = $('#details');
+  $allDetails.on('show.bs.collapse','.collapse', function() {
+      $allDetails.find('.collapse.in').collapse('hide');
+ });
+});
 </script>
 {% endblock %}
 
 {% block body %}
 <div class="container">
-    <h1 align="center">Choose storage type</h1>
-
-<table class="table hh">
-  <tbody>
-    <tr data-bind="foreach: filters" class="hh">
-        <td style="text-align: center;"data-bind="click: $root.goToSites" class="hh">
-            <img data-bind="attr: {src: '/static/cdmi/img/' + $data + '.png'}" width=80></img>
-            <strong data-bind="text: $data"></strong>
+  <h1>Available Qualities of Service</h1>
+  <table class="table table-hover sortable"
+         id="qos">
+    <thead>
+      <tr>
+        <th data-defaultsort="asc">Name</th>
+        <th>Access Latency</th>
+        <th>Number of Copies</th>
+        <th>Location</th>
+        <th>Storage type</th>
+        <th>Available Transitions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for qos in qualities_of_service %}
+      <tr style="cursor: pointer;" data-toggle="collapse"
+          data-target="#details-{{ qos.name|slugify }}">
+        <td>{{ qos.name }}</td>
+        <td>{{ qos.latency }}</td>
+        <td>{{ qos.copies }}</td>
+        <td>{{ qos.location.0 }}</td>
+        <td data-value="{{ qos.storage_types|slugify }}">
+          {% for type in qos.storage_types %}
+          <img title="{{ type|capfirst }}"
+               src="{% get_static_prefix %}cdmi/img/{{ type }}.png"
+               width="20"></img>
+          {% empty %}
+          <img title="Other"
+               src="{% static 'cdmi/img/other.png' %}"
+               width="20"></img>
+          {% endfor %}
         </td>
-    </tr>
-</tbody>
-</table>
-<div id="loadingDiv" align="center"><img src="{% static 'cdmi/img/loader.gif' %}" alt="loading"></img></div>
-<!-- Sites grid -->
-<table class="table table-hover" data-bind="visible: $root.chosenSitesData().length > 0">
-    <thead><tr>
-            <th data-bind="click: $root.sortChosenSitesData('name')">Name</th>
-            <th data-bind="click: $root.sortChosenSitesData('latency')">Access Latency</th>
-            <th data-bind="click: $root.sortChosenSitesData('copies')">Number of Copies</th>
-            <th data-bind="click: $root.sortChosenSitesData('location')">Location</th>
-            <th>Quality of Services</th>
-            <th>Transitions</th>
-            <!-- <th>URL</th> -->
-    </tr></thead>
-    <tbody data-bind="foreach: chosenSitesData">
-        <tr data-bind="click: $root.goToSite" style="cursor: pointer;">
-            <td><a data-bind="text: name"></a></td>
-            <td data-bind="text: latency"></td>
-            <td data-bind="text: copies"></td>
-            <td data-bind="text: location"></td>
-            <td data-bind="foreach: qos">
-                <img data-bind="attr: {src: '/static/cdmi/img/' + $data + '.png'}" width=20></img>
-            </td>
-            <td data-bind="text: transitions"></td>
-            <!-- <td data-bind="text: url"></td> -->
-        </tr>     
+        <td>{{ qos.transitions|join:", " }}</td>
+      </tr>
+      {% endfor %}
     </tbody>
-</table>
-
-<div data-bind="with: chosenSiteData">
-    <div>
-        <h1 data-bind="text: name"></h1>
-        <table class="table">
-            <tbody>
-                <tr>
-                    <td>CDMI URL</td>
-                    <td data-bind="text: url"></td>
-                </tr>
-                <tr data-bind="if: datapath">
-                    <td>Data Access</td>
-                    <td><a data-bind="attr: { href: datapath }">Go to site</td>
-                </tr>
-            </tbody>
-        </table>
+  </table>
+  
+  <div id="details">
+  {% for qos in qualities_of_service %}
+    <div class="collapse"
+         id="details-{{ qos.name|slugify }}">
+      <h2>{{ qos.name }}</h2>
+      <table class="table">
+        <tbody>
+          <tr>
+            <td>CDMI URL</td>
+            <td>{{ qos.url }}</td>
+          </tr>
+          <tr>
+            {% if qos.datapath %}
+            <td>Data Access</td>
+            <td><a href="{{ qos.datapath }}">Go to Site</td>
+            {% endif %}
+          </tr>
+        </tbody>
+      </table>
     </div>
-</div>
-
-</div>
-
-<script src="{% static 'cdmi/js/knockout-3.4.1.js' %}"></script>
-<script>
-var $loading = $('#loadingDiv').hide();
-$(document)
-    .ajaxStart(function () {
-      $loading.show();
-     })
-    .ajaxStop(function () {
-      $loading.hide();
-     });
-</script>
-<script>
-    function StorageSitesViewModel() {
-        // Data
-    var self = this;
-    self.filters = [];
-    {% for filter in filters %}
-    self.filters.push('{{ filter }}');
     {% endfor %}
-
-    self.chosenFilterId = ko.observable();
-    self.chosenSitesData = ko.observableArray();
-    self.chosenSiteData = ko.observable();
-    self.isLocked = ko.observable(false);
-
-    // Behaviours    
-    self.goToSites = function(filter) {
-      if (!self.isLocked()) {
-        self.isLocked(true);
-
-        self.chosenFilterId(filter);
-        self.chosenSitesData.removeAll();
-        self.chosenSiteData(null);
-
-        $.get("{{ sites_endpoint  }}", { filter: filter }, function(data) {
-            $.each(data.sites, function(index, value) {
-                self.chosenSitesData.push(value);
-            });
-            self.isLocked(false);
-        });
-
-      }
-    };
-
-    self.goToSite = function(site) {
-        self.chosenFilterId(site.filter);
-        self.chosenSitesData.removeAll();
-
-        self.chosenSiteData(site);
-    };
-
-    self.sortChosenSitesData = function(column) {
-        self.chosenSitesData.sort(function (left, right) {
-            return left[column] == right[column] ? 0 : (left[column] < right[column] ? -1 : 1)
-        });
-    };
-
-    };
-    ko.applyBindings(new StorageSitesViewModel());
-</script>
+  </div>
+</div>
 {% endblock %}

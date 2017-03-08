@@ -10,5 +10,4 @@ urlpatterns = [
     url(r'^mkdir', views.mkdir, name='mkdir'),
     url(r'^update', views.update, name='update'),
     url(r'^delete', views.delete, name='delete'),
-    url(r'^sites', views.sites, name='sites'),
 ]

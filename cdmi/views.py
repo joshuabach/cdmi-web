@@ -216,22 +216,6 @@ def browse(request):
 
     return render(request, 'cdmi/browse.html', context)
 
-@csrf_exempt
-def sites(request):
-    filter = request.GET.get('filter', '')
-
-    json_response = dict()
-
-    all_capabilities = []
-
-    for site in Site.objects.all():
-        all_capabilities += cdmi.get_all_capabilities(site.site_uri, request.session['access_token'])
-
-    json_response['sites'] = [x for x in all_capabilities
-                              if (filter == 'other' and not x['qos']
-                                  or filter in x['qos'])]
-
-    return JsonResponse(json_response)
 
 class IndexView(LoginRequiredMixin, generic.ListView):
     template_name = 'cdmi/index.html'
@@ -244,8 +228,12 @@ class IndexView(LoginRequiredMixin, generic.ListView):
 
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
-        context['sites_endpoint'] = settings.SITES_ENDPOINT
         context['username'] = self.request.user.username
-        context['filters'] = [f for f, _ in settings.STORAGE_TYPES] + ['other']
+
+        context['qualities_of_service'] = []
+        for site in Site.objects.all():
+            context['qualities_of_service'] += cdmi.get_all_capabilities(
+                site.site_uri,
+                self.request.session['access_token'])
 
         return context
