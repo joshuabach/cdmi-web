@@ -70,10 +70,14 @@ $(document).ready(function() {
             <td>{{ qos.url }}</td>
           </tr>
           <tr>
-            {% if qos.datapath %}
             <td>Data Access</td>
-            <td><a href="{{ qos.datapath }}">Go to Site</td>
-            {% endif %}
+            <td>
+              {% if qos.datapath %}
+              <a href="{{ qos.datapath }}">Go to Site</a>
+              {% else %}
+              <em>Unavailable for this CDMI server</em>
+              {% endif %}
+            </td>
           </tr>
         </tbody>
       </table>
