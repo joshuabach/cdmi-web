@@ -20,69 +20,101 @@
 
 {% block body %}
 <div class="container">
-  <h1>Available Qualities of Service</h1>
-  <table class="table table-hover sortable"
-         id="qos">
-    <thead>
-      <tr>
-        <th data-defaultsort="asc">Name</th>
-        <th>Access Latency</th>
-        <th>Number of Copies</th>
-        <th>Location</th>
-        <th>Storage type</th>
-        <th>Available Transitions</th>
-      </tr>
-    </thead>
-    <tbody>
+  <div class="container">
+    <h1>Available CDMI Endpoints</h1>
+    <table class="table sortable">
+      <thead>
+        <tr>
+          <th data-defaultsort="disabled"></th>
+          <th data-defaultsort="asc">Name</th>
+          <th>URL</th>
+          <th>Authentication</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for site in sites %}
+        <tr>
+          <td><img src="{{ site.logo_uri }}" width="50"></td>
+          <td>{{ site.site_name }}</td>
+          <td><a href="{{ site.site_uri }}">{{ site.site_uri }}</a></td>
+          <td>
+            {% if site.auth == 'bearer' %}
+            <strong>HTTP Bearer authentication</strong> with your access token
+            {% elif site.auth == 'basic' %}
+            <strong>HTTP Basic authentication</strong> with <em>restadmin:restadmin</em>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="container">
+    <h1>Available Qualities of Service</h1>
+    <table class="table table-hover sortable"
+           id="qos">
+      <thead>
+        <tr>
+          <th data-defaultsort="asc">Name</th>
+          <th>Access Latency</th>
+          <th>Number of Copies</th>
+          <th>Location</th>
+          <th>Storage type</th>
+          <th>Available Transitions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for qos in qualities_of_service %}
+        <tr style="cursor: pointer;" data-toggle="collapse"
+            data-target="#details-{{ qos.name|slugify }}">
+          <td>{{ qos.name }}</td>
+          <td>{{ qos.latency }}</td>
+          <td>{{ qos.copies }}</td>
+          <td>{{ qos.location.0 }}</td>
+          <td data-value="{{ qos.storage_types|slugify }}">
+            {% for type in qos.storage_types %}
+            <img title="{{ type|capfirst }}"
+                 src="{% get_static_prefix %}cdmi/img/{{ type }}.png"
+                 width="20">
+            {% empty %}
+            <img title="Other"
+                 src="{% static 'cdmi/img/other.png' %}"
+                 width="20">
+            {% endfor %}
+          </td>
+          <td>{{ qos.transitions|join:", " }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    
+    <div id="details">
       {% for qos in qualities_of_service %}
-      <tr style="cursor: pointer;" data-toggle="collapse"
-          data-target="#details-{{ qos.name|slugify }}">
-        <td>{{ qos.name }}</td>
-        <td>{{ qos.latency }}</td>
-        <td>{{ qos.copies }}</td>
-        <td>{{ qos.location.0 }}</td>
-        <td data-value="{{ qos.storage_types|slugify }}">
-          {% for type in qos.storage_types %}
-          <img title="{{ type|capfirst }}"
-               src="{% get_static_prefix %}cdmi/img/{{ type }}.png"
-               width="20">
-          {% empty %}
-          <img title="Other"
-               src="{% static 'cdmi/img/other.png' %}"
-               width="20">
-          {% endfor %}
-        </td>
-        <td>{{ qos.transitions|join:", " }}</td>
-      </tr>
+      <div class="collapse"
+           id="details-{{ qos.name|slugify }}">
+        <h2>{{ qos.name }}</h2>
+        <table class="table">
+          <tbody>
+            <tr>
+              <td>CDMI URL</td>
+              <td><a href="{{ qos.url }}">{{ qos.url }}</a></td>
+            </tr>
+            <tr>
+              <td>Data Access</td>
+              <td>
+                {% if qos.datapath %}
+                <a href="{{ qos.datapath }}">Go to Site</a>
+                {% else %}
+                <em>Unavailable for this CDMI server</em>
+                {% endif %}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       {% endfor %}
-    </tbody>
-  </table>
-  
-  <div id="details">
-  {% for qos in qualities_of_service %}
-    <div class="collapse"
-         id="details-{{ qos.name|slugify }}">
-      <h2>{{ qos.name }}</h2>
-      <table class="table">
-        <tbody>
-          <tr>
-            <td>CDMI URL</td>
-            <td>{{ qos.url }}</td>
-          </tr>
-          <tr>
-            <td>Data Access</td>
-            <td>
-              {% if qos.datapath %}
-              <a href="{{ qos.datapath }}">Go to Site</a>
-              {% else %}
-              <em>Unavailable for this CDMI server</em>
-              {% endif %}
-            </td>
-          </tr>
-        </tbody>
-      </table>
     </div>
-    {% endfor %}
   </div>
 </div>
 {% endblock %}
