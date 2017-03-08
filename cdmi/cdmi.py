@@ -42,7 +42,8 @@ def _update_qos_cdmi(url, access_token, is_dir, body):
     try:
         r = requests.put(url, **request_kwargs)
         json_response = r.json()
-        logger.debug(json_response)
+        logger.debug("PUT {} -> {} {}".format(
+            url, r.status_code, json_response))
     except (ConnectionError):
         logger.warning('Could not connect to CDMI host {}'.format(url))
     except (JSONDecodeError):
@@ -57,7 +58,8 @@ def _query_cdmi(url, access_token):
     try:
         r = requests.get(url, **request_kwargs)
         json_response = r.json()
-        logger.debug(json_response)
+        logger.debug('GET {} -> {} {}'.format(
+            url, r.status_code, json_response))
     except (ConnectionError):
         logger.warning('Could not connect to CDMI host {}'.format(url))
     except (JSONDecodeError):
