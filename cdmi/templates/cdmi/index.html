@@ -45,11 +45,11 @@ $(document).ready(function() {
           {% for type in qos.storage_types %}
           <img title="{{ type|capfirst }}"
                src="{% get_static_prefix %}cdmi/img/{{ type }}.png"
-               width="20"></img>
+               width="20">
           {% empty %}
           <img title="Other"
                src="{% static 'cdmi/img/other.png' %}"
-               width="20"></img>
+               width="20">
           {% endfor %}
         </td>
         <td>{{ qos.transitions|join:", " }}</td>
