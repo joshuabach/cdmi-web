@@ -48,6 +48,7 @@
         <th></th>
     </thead>
     <tbody>
+      {% if path and path != '.' %}
       <tr>
         <form action="{% url 'cdmi:browse' %}" method="get">
           {% csrf_token %}
@@ -63,7 +64,8 @@
         <td></td>
         <td></td>
         <td></td>
-      <tr>
+      </tr>
+      {% endif %}
     {% for o in object_list %}
     <tr>
         {% if o.type == "File" %}
