@@ -1,4 +1,3 @@
-import json
 import requests
 import logging
 
@@ -6,7 +5,6 @@ from requests.compat import urljoin, urlsplit
 from requests.exceptions import ConnectionError
 from json import JSONDecodeError
 
-from django.contrib import messages
 from django.conf import settings
 from django.shortcuts import reverse
 
@@ -52,6 +50,7 @@ def _update_qos_cdmi(url, access_token, is_dir, body):
 
     return json_response
 
+
 def _query_cdmi(url, access_token):
     request_kwargs = _request_auth_kwargs(url, access_token)
 
@@ -68,6 +67,7 @@ def _query_cdmi(url, access_token):
 
     return json_response
 
+
 def put_capabilities_class(path, access_token, is_dir, capabilities):
     cdmi_uri = settings.CDMI_URI
     url = urljoin(cdmi_uri, path)
@@ -77,6 +77,7 @@ def put_capabilities_class(path, access_token, is_dir, capabilities):
 
     return response
 
+
 def get_status(path, access_token):
     cdmi_uri = settings.CDMI_URI
     url = urljoin(cdmi_uri, path)
@@ -84,6 +85,7 @@ def get_status(path, access_token):
     status = _query_cdmi(url, access_token)
 
     return status
+
 
 def get_capabilities_class(url, access_token, classes=None):
     capabilities = _query_cdmi(url, access_token)
@@ -95,7 +97,7 @@ def get_capabilities_class(url, access_token, classes=None):
         latency = capabilities['metadata']['cdmi_latency']
         location = capabilities['metadata']['cdmi_geographic_placement']
         transitions = capabilities['metadata']['cdmi_capabilities_allowed']
-        transitions = [ x.rsplit('/', 1)[-1] for x in transitions ]
+        transitions = [x.rsplit('/', 1)[-1] for x in transitions]
 
         datapath = None
         if urlsplit(url).netloc == urlsplit(settings.CDMI_URI).netloc:
@@ -105,8 +107,10 @@ def get_capabilities_class(url, access_token, classes=None):
                for storage_type, predicate in settings.STORAGE_TYPES
                if predicate(capabilities)]
 
-        capabilities_class = dict(name=name, latency=latency, copies=copies, location=location,
-                storage_types=qos, transitions=transitions, url=url, datapath=datapath)
+        capabilities_class = dict(
+            name=name, latency=latency, copies=copies, location=location,
+            storage_types=qos, transitions=transitions, url=url,
+            datapath=datapath)
 
         logger.debug('QoS for {}: {}'.format(name, qos))
 
@@ -115,6 +119,7 @@ def get_capabilities_class(url, access_token, classes=None):
 
     return capabilities_class
 
+
 def get_all_capabilities(url, access_token):
     capabilities_url = urljoin(url, 'cdmi_capabilities/dataobject')
     capabilities = _query_cdmi(capabilities_url, access_token)
@@ -122,9 +127,11 @@ def get_all_capabilities(url, access_token):
     all_capabilities = []
     try:
         for child in capabilities['children']:
-            child_url = urljoin(url, 'cdmi_capabilities/dataobject/{}'.format(child))
+            child_url = urljoin(
+                url, 'cdmi_capabilities/dataobject/{}'.format(child))
 
-            capabilities_class = get_capabilities_class(child_url, access_token)
+            capabilities_class = get_capabilities_class(
+                child_url, access_token)
 
             all_capabilities.append(capabilities_class)
     except (KeyError):
