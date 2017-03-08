@@ -82,7 +82,10 @@ def handle_update_object(request):
     qos = request.POST['qos']
     capabilities = urlsplit(qos).path
 
-    response = cdmi.put_capabilities_class(path, request, capabilities)
+    response = cdmi.put_capabilities_class(
+        path, request.session['access_token'],
+        'is_dir' in request.POST and request.POST['is_dir'] == 'True',
+        capabilities)
 
     logger.debug(response)
 
@@ -176,7 +179,7 @@ def browse(request):
         if 'path' in request.GET and 'name' in request.GET:
             path = os.path.join(path, request.GET['path'])
             url = urljoin(settings.CDMI_URI, request.GET['info'])
-            object_info = cdmi.get_capabilities_class(url, request)
+            object_info = cdmi.get_capabilities_class(url, request.session['access_token'])
             object_info['url'] = url
             object_info['path'] = os.path.join(path, request.GET['name'])
             abs_path = os.path.join(settings.MEDIA_ROOT, path, request.GET['name'])
@@ -193,14 +196,14 @@ def browse(request):
     for d in dirs:
         o = FileObject(d, 'Directory')
         p = os.path.join(path, d)
-        status = cdmi.get_status(p, request)
+        status = cdmi.get_status(p, request.session['access_token'])
 
         object_list.append(_set_object_capabilities(o, status))
 
     for f in files:
         o = FileObject(f, 'File')
         p = os.path.join(path, f)
-        status = cdmi.get_status(p, request)
+        status = cdmi.get_status(p, request.session['access_token'])
 
         object_list.append(_set_object_capabilities(o, status))
 
@@ -222,7 +225,7 @@ def sites(request):
     all_capabilities = []
 
     for site in Site.objects.all():
-        all_capabilities += cdmi.get_all_capabilities(site.site_uri, request)
+        all_capabilities += cdmi.get_all_capabilities(site.site_uri, request.session['access_token'])
 
     json_response['sites'] = [x for x in all_capabilities
                               if (filter == 'other' and not x['qos']

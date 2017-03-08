@@ -23,20 +23,19 @@ def _auth_method(url):
     return method
 
 
-def _request_auth_kwargs(url, request):
+def _request_auth_kwargs(url, access_token):
     if _auth_method(url) == 'basic':
         return {'auth': ('restadmin', 'restadmin'),
                 'headers': {}}
     else:
         return {'headers': {'Authorization': 'Bearer {}'.format(
-            request.session['access_token'])}}
+            access_token)}}
 
 
-def _update_qos_cdmi(url, request, body):
-    request_kwargs = _request_auth_kwargs(url, request)
-    request_kwargs['headers']['Content-Type'] = 'application/cdmi-object'
-    if 'is_dir' in request.POST and request.POST['is_dir'] == 'True':
-        request_kwargs['headers']['Content-Type'] = 'application/cdmi-container'
+def _update_qos_cdmi(url, access_token, is_dir, body):
+    request_kwargs = _request_auth_kwargs(url, access_token)
+    request_kwargs['headers']['Content-Type'] = (
+        'application/cdmi-container' if is_dir else 'application/cdmi-object')
     request_kwargs['json'] = body
 
     json_response = dict()
@@ -51,8 +50,8 @@ def _update_qos_cdmi(url, request, body):
 
     return json_response
 
-def _query_cdmi(url, request):
-    request_kwargs = _request_auth_kwargs(url, request)
+def _query_cdmi(url, access_token):
+    request_kwargs = _request_auth_kwargs(url, access_token)
 
     json_response = dict()
     try:
@@ -66,25 +65,25 @@ def _query_cdmi(url, request):
 
     return json_response
 
-def put_capabilities_class(path, request, capabilities):
+def put_capabilities_class(path, access_token, is_dir, capabilities):
     cdmi_uri = settings.CDMI_URI
     url = urljoin(cdmi_uri, path)
 
     body = {'capabilitiesURI': capabilities}
-    response = _update_qos_cdmi(url, request, body)
+    response = _update_qos_cdmi(url, access_token, is_dir, body)
 
     return response
 
-def get_status(path, request):
+def get_status(path, access_token):
     cdmi_uri = settings.CDMI_URI
     url = urljoin(cdmi_uri, path)
 
-    status = _query_cdmi(url, request)
+    status = _query_cdmi(url, access_token)
 
     return status
 
-def get_capabilities_class(url, request, classes=None):
-    capabilities = _query_cdmi(url, request)
+def get_capabilities_class(url, access_token, classes=None):
+    capabilities = _query_cdmi(url, access_token)
 
     capabilities_class = dict()
     try:
@@ -113,16 +112,16 @@ def get_capabilities_class(url, request, classes=None):
 
     return capabilities_class
 
-def get_all_capabilities(url, request):
+def get_all_capabilities(url, access_token):
     capabilities_url = urljoin(url, 'cdmi_capabilities/dataobject')
-    capabilities = _query_cdmi(capabilities_url, request)
+    capabilities = _query_cdmi(capabilities_url, access_token)
 
     all_capabilities = []
     try:
         for child in capabilities['children']:
             child_url = urljoin(url, 'cdmi_capabilities/dataobject/{}'.format(child))
 
-            capabilities_class = get_capabilities_class(child_url, request)
+            capabilities_class = get_capabilities_class(child_url, access_token)
 
             all_capabilities.append(capabilities_class)
     except (KeyError):
