@@ -73,7 +73,7 @@ DATA_ENDPOINT = 'http://localhost:8000/cdmi/browse'
 
 STORAGE_TYPES = [
     ('processing', lambda cap: int(cap['metadata']['cdmi_latency']) < 200),
-    ('archiving', lambda cap: int(cap['metadata']['cdmi_latency']) > 200)
+    ('archival', lambda cap: int(cap['metadata']['cdmi_latency']) > 200)
 ]
 
 # Application definition
