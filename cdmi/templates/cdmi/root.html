@@ -4,8 +4,16 @@
 <html lang="en">
   <head>
     <title>CDMI Web</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'cdmi/css/custom.css' %}" />
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="{% static 'cdmi/js/jquery-3.1.1.min.js' %}"></script>
+
+    <!-- Twitter Bootstrap -->
+    <script src="{% static 'cdmi/js/bootstrap.min.js' %}"></script>
     <link rel="stylesheet" type="text/css" href="{% static 'cdmi/css/bootstrap.min.css' %}" />
+
+    <!-- Custom -->
+    <link rel="stylesheet" type="text/css" href="{% static 'cdmi/css/custom.css' %}" />
 
     {% block head %}
     {% endblock %}
