@@ -55,8 +55,7 @@ def delete(request, site):
     if request.method == 'POST':
         if 'path' in request.POST and 'name' in request.POST:
             if site.browser_module == 'browser':
-                browser.handle_delete_object(request.user.username,
-                                             request.POST['name'],
+                browser.handle_delete_object(request.POST['name'],
                                              request.POST['path'])
 
                 messages.success(request, '{} deleted'.format(
@@ -74,8 +73,7 @@ def upload(request, site):
     if request.method == 'POST':
         if 'file' in request.FILES and 'path' in request.POST:
             if site.browser_module == 'browser':
-                browser.handle_uploaded_file(request.user.username,
-                                             request.FILES['file'],
+                browser.handle_uploaded_file(request.FILES['file'],
                                              request.POST['path'])
                 messages.success(request, '{} uploaded'.format(
                     request.FILES['file'].name))
@@ -93,8 +91,7 @@ def mkdir(request, site):
     if request.method == 'POST':
         if 'path' in request.POST and 'name' in request.POST:
             if site.browser_module == 'browser':
-                browser.handle_create_directory(request.user.username,
-                                                request.POST['name'],
+                browser.handle_create_directory(request.POST['name'],
                                                 request.POST['path'])
                 messages.success(request, '{}/{} created'.format(
                     request.POST['path'], request.POST['name']))
@@ -130,45 +127,39 @@ def browse(request, site):
     site = Site.objects.get(id=site)
 
     username = request.user.username
-    # TODO
-    storage_path = browser.user_path(username)
-    browser.create_if_not_exists(storage_path)
-    path = storage_path
 
     context = dict()
 
-    if 'path' in request.GET:
-        path = os.path.join(path, request.GET['path'])
+    path = request.GET.get('path', '')
 
     object_info = None
-    if 'info' in request.GET:
-        if 'name' in request.GET:
-            url = urljoin(settings.CDMI_URI, request.GET['info'])
-            object_info = cdmi.get_capabilities_class(
-                url, request.session['access_token'])
-            object_info['url'] = url
-            object_info['path'] = os.path.join(path, request.GET['name'])
-            abs_path = os.path.join(settings.MEDIA_ROOT, path,
-                                    request.GET['name'])
-            object_info['is_dir'] = os.path.isdir(abs_path)
+    if 'info' in request.GET and 'name' in request.GET:
+        url = urljoin(settings.CDMI_URI, request.GET['info'])
+        object_info = cdmi.get_capabilities_class(
+            url, request.session['access_token'])
+        object_info['url'] = url
+        object_info['path'] = os.path.join(path, request.GET['name'])
+        abs_path = os.path.join(settings.MEDIA_ROOT, path,
+                                request.GET['name'])
+        object_info['is_dir'] = os.path.isdir(abs_path)
 
-            logger.debug("Is dir? {} {}".format(
-                abs_path, os.path.isdir(abs_path)))
+        logger.debug("Is dir? {} {}".format(
+            abs_path, os.path.isdir(abs_path)))
 
-            context['next_url'] = request.GET['nextbutone']
+        context['next_url'] = request.GET['nextbutone']
 
     logger.debug("current path {}".format(path))
 
     object_list = [
         _set_object_capabilities(
-            obj, cdmi.get_status(os.path.join(path, obj.name),
+            obj, cdmi.get_status(site, os.path.join(path, obj.name),
                                  request.session['access_token']))
         for obj in browser.list_objects(path)]
 
     context.update({
             'object_list': object_list,
             'username': username,
-            'path': os.path.relpath(path, storage_path),
+            'path': path,
             'site': site,
             'object_info': object_info
         })

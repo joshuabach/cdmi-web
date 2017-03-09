@@ -10,10 +10,6 @@ logger = logging.getLogger(__name__)
 storage = default_storage
 
 
-def user_path(username):
-    return os.path.join('', username)
-
-
 def create_if_not_exists(path):
     path = os.path.join(settings.MEDIA_ROOT, path)
     if not os.path.exists(path):
@@ -26,8 +22,8 @@ class FileObject(object):
         self.type = type
 
 
-def handle_delete_object(username, name, path):
-    storage_path = os.path.join(user_path(username), path, name)
+def handle_delete_object(name, path):
+    storage_path = os.path.join(path, name)
 
     logger.debug("Delete {}".format(storage_path))
 
@@ -38,10 +34,10 @@ def handle_delete_object(username, name, path):
         shutil.rmtree(storage.path(storage_path))
 
 
-def handle_uploaded_file(username, file, path):
+def handle_uploaded_file(file, path):
     name = file.name
 
-    storage_path = os.path.join(user_path(username), path, name)
+    storage_path = os.path.join(path, name)
     os_path = os.path.join(settings.MEDIA_ROOT, storage_path)
 
     logger.debug("Upload {}".format(os_path))
@@ -51,8 +47,8 @@ def handle_uploaded_file(username, file, path):
             destination.write(chunk)
 
 
-def handle_create_directory(username, name, path):
-    new_dir = os.path.join(user_path(username), path, name)
+def handle_create_directory(name, path):
+    new_dir = os.path.join(path, name)
     os_path = os.path.join(settings.MEDIA_ROOT, new_dir)
 
     logger.debug("Create directory {}".format(os_path))
