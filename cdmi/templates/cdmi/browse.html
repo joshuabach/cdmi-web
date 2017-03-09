@@ -40,8 +40,28 @@
       </div>
       <div id="navbar" class="navbar-collapse collapse">
         <ul class="nav navbar-nav navbar-right">
-          <li><a href="#" data-toggle="modal" data-target="#mkdir">Create Directory</a></li>
-          <li><a href="#" data-toggle="modal" data-target="#upload">Upload File</a></li>
+          <li>
+            <button data-toggle="modal"
+                    {% if site.browser_module == '' %}
+                    title="Unavailable for this CDMI site"
+                    data-target="#mkdir"
+                    {% endif %}
+                    class="btn btn-primary
+                           {% if site.browser_module == '' %}disabled{% endif %}">
+              Create Directory
+            </button>
+          </li>
+          <li>
+            <button data-toggle="modal"
+                    {% if site.browser_module == '' %}
+                    title="Unavailable for this CDMI site"
+                    data-target="#upload"
+                    {% endif %}
+                    class="btn btn-primary
+                           {% if site.browser_module == '' %}disabled{% endif %}">
+              Upload File
+            </button>
+          </li>
         </ul>
       </div><!--/.nav-collapse -->
     </div><!--/.container-fluid -->
@@ -153,9 +173,13 @@
         <td>
           <form action="{% url 'cdmi:delete' site.id path %}" method="post">
             {% csrf_token %}
-            {#<input type="hidden" name="path" value="{{ path }}" />#}
             <input type="hidden" name="name" value="{{ o.name }}" />
-            <button type="submit" style="border: none; background-color: white; color: red;">Delete</button>
+            <button class="btn bare-btn btn-small
+                           {% if site.browser_module == '' %}disabled{% endif %}"
+                    {% if site.browser_module == '' %}
+                    title="Unavailable for this CDMI site"
+                    {% endif %}
+                    type="submit" style="color: red">Delete</button>
           </form>
         </td>
       </tr>

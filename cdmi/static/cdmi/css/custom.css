@@ -5,3 +5,22 @@ body {
 .navbar {
   margin-bottom: 20px;
 }
+
+li {
+    line-height: 35px;
+    text-align: center;
+    margin: 5px
+}
+
+.bare-btn {
+    border: none;
+    background-color: white;
+}
+
+.bare-btn:hover {
+    text-decoration: underline;
+}
+
+.disabled:hover {
+    text-decoration: none;
+}
