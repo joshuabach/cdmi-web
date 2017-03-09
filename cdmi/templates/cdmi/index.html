@@ -77,6 +77,7 @@
             <img title="{{ type|capfirst }}"
                  src="{% get_static_prefix %}cdmi/img/{{ type }}.png"
                  width="20">
+            <small>{{ type|capfirst }}</small>{% if not forloop.last %}, {% endif %}
             {% empty %}
             <img title="Other"
                  src="{% static 'cdmi/img/other.png' %}"
