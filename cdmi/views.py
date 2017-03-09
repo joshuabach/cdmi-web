@@ -1,6 +1,5 @@
 import os
 import logging
-import shutil
 
 from requests.compat import urljoin, urlsplit
 
@@ -8,73 +7,13 @@ from django.shortcuts import render, redirect
 from django.views import generic
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.core.files.storage import default_storage
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .models import Site
-from . import cdmi
+from . import cdmi, browser
 
 logger = logging.getLogger(__name__)
-storage = default_storage
-
-
-def user_path(request):
-    return os.path.join('', request.user.username)
-
-
-def create_if_not_exists(path):
-    path = os.path.join(settings.MEDIA_ROOT, path)
-    if not os.path.exists(path):
-        os.makedirs(path)
-
-
-class FileObject(object):
-    def __init__(self, name, type, path=''):
-        self.name = name
-        self.type = type
-
-
-def handle_delete_object(request):
-    name = request.POST['name']
-    path = request.POST['path']
-
-    storage_path = os.path.join(user_path(request), path, name)
-
-    logger.debug("Delete {}".format(storage_path))
-
-    try:
-        storage.delete(storage_path)
-    except IsADirectoryError:
-        # https://code.djangoproject.com/ticket/27836
-        shutil.rmtree(storage.path(storage_path))
-
-
-def handle_uploaded_file(request):
-    f = request.FILES['file']
-    path = request.POST['path']
-    name = f.name
-
-    storage_path = os.path.join(user_path(request), path, name)
-    os_path = os.path.join(settings.MEDIA_ROOT, storage_path)
-
-    logger.debug("Upload {}".format(os_path))
-
-    with open(os_path, 'wb+') as destination:
-        for chunk in f.chunks():
-            destination.write(chunk)
-
-
-def handle_create_directory(request):
-    path = request.POST['path']
-    name = request.POST['name']
-
-    new_dir = os.path.join(user_path(request), path, name)
-    os_path = os.path.join(settings.MEDIA_ROOT, new_dir)
-
-    logger.debug("Create directory {}".format(os_path))
-
-    os.makedirs(os_path, exist_ok=True)
 
 
 def handle_update_object(request):
@@ -110,7 +49,7 @@ def update(request):
 def delete(request):
     if request.method == 'POST':
         if 'path' in request.POST and 'name' in request.POST:
-            handle_delete_object(request)
+            browser.handle_delete_object(request)
             messages.success(request, '{} deleted'.format(
                 request.POST['name']))
 
@@ -124,7 +63,7 @@ def delete(request):
 def upload(request):
     if request.method == 'POST':
         if 'file' in request.FILES and 'path' in request.POST:
-            handle_uploaded_file(request)
+            browser.handle_uploaded_file(request)
             messages.success(request, '{} uploaded'.format(
                 request.FILES['file'].name))
 
@@ -138,7 +77,7 @@ def upload(request):
 def mkdir(request):
     if request.method == 'POST':
         if 'path' in request.POST and 'name' in request.POST:
-            handle_create_directory(request)
+            browser.handle_create_directory(request)
             messages.success(request, '{}/{} created'.format(
                 request.POST['path'], request.POST['name']))
 
@@ -171,8 +110,8 @@ def _set_object_capabilities(o, status):
 @login_required(login_url='/openid/login')
 def browse(request):
     username = request.user.username
-    storage_path = user_path(request)
-    create_if_not_exists(storage_path)
+    storage_path = browser.user_path(request)
+    browser.create_if_not_exists(storage_path)
     path = storage_path
 
     context = dict()
@@ -201,22 +140,11 @@ def browse(request):
 
     logger.debug("current path {}".format(path))
 
-    dirs, files = storage.listdir(path)
-    object_list = []
-
-    for d in dirs:
-        o = FileObject(d, 'Directory')
-        p = os.path.join(path, d)
-        status = cdmi.get_status(p, request.session['access_token'])
-
-        object_list.append(_set_object_capabilities(o, status))
-
-    for f in files:
-        o = FileObject(f, 'File')
-        p = os.path.join(path, f)
-        status = cdmi.get_status(p, request.session['access_token'])
-
-        object_list.append(_set_object_capabilities(o, status))
+    object_list = [
+        _set_object_capabilities(
+            obj, cdmi.get_status(os.path.join(path, obj.name),
+                                 request.session['access_token']))
+        for obj in browser.list_objects(path)]
 
     context.update({
             'object_list': object_list,
