@@ -111,7 +111,7 @@ def browse(request, site, path):
 
     object_info = None
     if 'info' in request.GET and 'name' in request.GET:
-        url = urljoin(settings.CDMI_URI, request.GET['info'])
+        url = urljoin(site.site_uri, request.GET['info'])
         object_info = cdmi.get_capabilities_class(
             url, request.session['access_token'])
         object_info['url'] = url
