@@ -81,14 +81,14 @@
   </table>
   {% endif %}
   <div id="loadingDiv" align="center"><img src="{% static 'cdmi/img/loader.gif' %}" alt="loading"></div>
-  <table class="table" style="font-size:14px">
+  <table class="table sortable" style="font-size:14px">
     <thead><tr>
-        <th>Name</th>
+        <th data-defaultsort="asc">Name</th>
         <th>Type</th>
         <th>Current QoS</th>
-        <th>Change QoS</th>
-        <th></th>
-        <th></th>
+        <th data-defaultsort="disabled">Change QoS</th>
+        <th data-defaultsort="disabled"></th>
+        <th data-defaultsort="disabled"></th>
     </thead>
     <tbody>
       {% if path and path != '.' %}
