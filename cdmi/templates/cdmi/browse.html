@@ -148,7 +148,16 @@
         <td>
           <div class="dropdown">
             <!-- <li class="dropdown"> -->
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Supported <span class="caret"></span></a>
+            <a href="#" class="dropdown-toggle
+                               {% if not o.capabilities_allowed %}disabled{% endif %}"
+               {% if not o.capabilities_allowed %}
+               style="cursor: not-allowed; text-decoration: none"
+               title="No transitions available for {{ o.capabilities_name }}"
+               {% endif %}
+               data-toggle="dropdown" role="button"
+               aria-haspopup="true" aria-expanded="false">
+              Supported<span class="caret"></span>
+            </a>
             <ul class="dropdown-menu">
 	            {% for allowed in o.capabilities_allowed %}
               <form action="{% url 'cdmi:browse' site.id path %}" method="get">
