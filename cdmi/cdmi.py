@@ -101,7 +101,7 @@ def get_capabilities_class(url, access_token, classes=None):
 
         datapath = None
         if urlsplit(url).netloc == urlsplit(settings.CDMI_URI).netloc:
-            datapath = reverse('cdmi:browse', kwargs={'site': 1})  # TODO
+            datapath = reverse('cdmi:browse', kwargs={'site': 1, 'path': ''})  # TODO
 
         qos = [storage_type
                for storage_type, predicate in settings.STORAGE_TYPES

@@ -17,8 +17,7 @@ from . import cdmi, browser
 logger = logging.getLogger(__name__)
 
 
-def handle_update_object(request, site):
-    path = request.POST['path']
+def handle_update_object(request, site, path):
     qos = request.POST['qos']
     capabilities = urlsplit(qos).path
 
@@ -31,32 +30,32 @@ def handle_update_object(request, site):
 
 
 @login_required(login_url='/openid/login')
-def update(request, site):
+def update(request, site, path):
     site = Site.objects.get(id=site)
 
     if request.method == 'POST':
-        if 'qos' in request.POST and 'path' in request.POST:
+        if 'qos' in request.POST:
             logger.debug("Change {} to {}".format(
-                request.POST['path'], request.POST['qos']))
-            handle_update_object(request, site)
+                path, request.POST['qos']))
+            handle_update_object(request, site, path)
             messages.success(request, '{} updated'.format(
-                request.POST['path']))
+                path))
 
     if request.method == 'POST' and 'next' in request.POST:
         return redirect(request.POST['next'])
     else:
-        return redirect('cdmi:browse', site.id)
+        return redirect('cdmi:browse', site.id, path)
 
 
 @login_required(login_url='/openid/login')
-def delete(request, site):
+def delete(request, site, path):
     site = Site.objects.get(id=site)
 
     if request.method == 'POST':
-        if 'path' in request.POST and 'name' in request.POST:
+        if 'name' in request.POST:
             if site.browser_module == 'browser':
                 browser.handle_delete_object(request.POST['name'],
-                                             request.POST['path'])
+                                             path)
 
                 messages.success(request, '{} deleted'.format(
                     request.POST['name']))
@@ -64,42 +63,42 @@ def delete(request, site):
     if request.method == 'POST' and 'next' in request.POST:
         return redirect(request.POST['next'])
     else:
-        return redirect('cdmi:browse', site.id)
+        return redirect('cdmi:browse', site.id, path)
 
 
 @login_required(login_url='/openid/login')
-def upload(request, site):
+def upload(request, site, path):
     site = Site.objects.get(id=site)
     if request.method == 'POST':
-        if 'file' in request.FILES and 'path' in request.POST:
+        if 'file' in request.FILES:
             if site.browser_module == 'browser':
                 browser.handle_uploaded_file(request.FILES['file'],
-                                             request.POST['path'])
+                                             path)
                 messages.success(request, '{} uploaded'.format(
                     request.FILES['file'].name))
 
     if request.method == 'POST' and 'next' in request.POST:
         return redirect(request.POST['next'])
     else:
-        return redirect('cdmi:browse', site.id)
+        return redirect('cdmi:browse', site.id, path)
 
 
 @login_required(login_url='/openid/login')
-def mkdir(request, site):
+def mkdir(request, site, path):
     site = Site.objects.get(id=site)
 
     if request.method == 'POST':
-        if 'path' in request.POST and 'name' in request.POST:
+        if 'name' in request.POST:
             if site.browser_module == 'browser':
                 browser.handle_create_directory(request.POST['name'],
-                                                request.POST['path'])
+                                                path)
                 messages.success(request, '{}/{} created'.format(
-                    request.POST['path'], request.POST['name']))
+                    path, request.POST['name']))
 
     if request.method == 'POST' and 'next' in request.POST:
         return redirect(request.POST['next'])
     else:
-        return redirect('cdmi:browse', site.id)
+        return redirect('cdmi:browse', site.id, path)
 
 
 def _set_object_capabilities(o, status):
@@ -123,14 +122,12 @@ def _set_object_capabilities(o, status):
 
 
 @login_required(login_url='/openid/login')
-def browse(request, site):
+def browse(request, site, path):
     site = Site.objects.get(id=site)
 
     username = request.user.username
 
     context = dict()
-
-    path = request.GET.get('path', '')
 
     object_info = None
     if 'info' in request.GET and 'name' in request.GET:

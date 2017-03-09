@@ -74,11 +74,9 @@
       {% if path and path != '.' %}
       <tr>
         <td>
-          <form action="{% url 'cdmi:browse' site.id %}" method="get">
-            {% csrf_token %}
-            <input type="hidden" name="path" value="{{ path|dirname }}" />
-            <button type="submit" class="btn btn-link">..</button>
-          </form>
+          <a href="{% url 'cdmi:browse' site.id path|dirname %}" method="get">
+            ..
+          </a>
         </td>
         <td>Directory</td>
         <td></td>
@@ -95,11 +93,13 @@
         </td>
         {% else %}
         <td>
-          <form action="{% url 'cdmi:browse' site.id %}" method="get">
-            {% csrf_token %}
-            <input type="hidden" name="path" value="{% if path %}{{ path }}/{% endif %}{{ o.name }}" />
-            <button type="submit" class="btn btn-link">{{ o.name }}</button>
-          </form>
+          <a href="{% if path %}
+                    {% url 'cdmi:browse' site.id path|add:"/"|add:o.name %}
+                   {% else %}
+                    {% url 'cdmi:browse' site.id o.name %}
+                   {% endif %}">
+            {{ o.name }}
+          </a>
         </td>
         {% endif %}
         <td>
@@ -129,9 +129,8 @@
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Supported <span class="caret"></span></a>
             <ul class="dropdown-menu">
 	            {% for allowed in o.capabilities_allowed %}
-              <form action="{% url 'cdmi:browse' site.id %}" method="get">
+              <form action="{% url 'cdmi:browse' site.id path %}" method="get">
                 {% csrf_token %}
-                <input type="hidden" name="path" value="{{ path }}" />
                 <input type="hidden" name="name" value="{{ o.name }}" />
                 <input type="hidden" name="info" value="{{ allowed }}" />
                 <input type="hidden" name="nextbutone" value="{{ request.get_full_path }}" />
@@ -152,9 +151,9 @@
           {% endif %}
         </td>
         <td>
-          <form action="{% url 'cdmi:delete' site.id %}" method="post">
+          <form action="{% url 'cdmi:delete' site.id path %}" method="post">
             {% csrf_token %}
-            <input type="hidden" name="path" value="{{ path }}" />
+            {#<input type="hidden" name="path" value="{{ path }}" />#}
             <input type="hidden" name="name" value="{{ o.name }}" />
             <button type="submit" style="border: none; background-color: white; color: red;">Delete</button>
           </form>
@@ -179,12 +178,12 @@
         <h4 class="modal-title" id="uploadLabel">Upload file</h4>
       </div>
       <div class="modal-body">
-        <form action="{% url 'cdmi:upload' site.id %}" method="post" enctype="multipart/form-data">
+        <form action="{% url 'cdmi:upload' site.id path %}" method="post" enctype="multipart/form-data">
           {% csrf_token %}
           <div class="form-group">
             <input type="file" id="file" name="file">
             <p class="help-block">Search for files to upload.</p>
-            <input type="hidden" name="path" value="{{ path }}" />
+            {#<input type="hidden" name="path" value="{{ path }}" />#}
             <input type="hidden" name="next" value="{{ request.get_full_path }}" />
           </div>
           <div class="modal-footer">
@@ -205,12 +204,12 @@
         <h4 class="modal-title" id="mkdirLabel">Create Directory</h4>
       </div>
       <div class="modal-body">
-        <form action="{% url 'cdmi:mkdir' site.id %}" method="post">
+        <form action="{% url 'cdmi:mkdir' site.id path %}" method="post">
           {% csrf_token %}
           <div class="form-group">
             <input type="text" id="name" name="name">
             <p class="help-block">Name of directory</p>
-            <input type="hidden" name="path" value="{{ path }}" />
+            {#<input type="hidden" name="path" value="{{ path }}" />#}
             <input type="hidden" name="next" value="{{ request.get_full_path }}" />
           </div>
           <div class="modal-footer">
@@ -260,10 +259,10 @@
         </table>
       </div>
       <div class="modal-footer">
-        <form action="{% url 'cdmi:update' site.id %}" method="post">
+        <form action="{% url 'cdmi:update' site.id object_info.path %}" method="post">
           {% csrf_token %}
           <input type="hidden" name="qos" value="{{ object_info.url }}"></input>
-          <input type="hidden" name="path" value="{{ object_info.path }}"></input>
+          {#<input type="hidden" name="path" value="{{ object_info.path }}"></input>#}
 	        <input type="hidden" name="is_dir" value="{{ object_info.is_dir }}"></input>
           <input type="hidden" name="next" value="{{ next_url }}" />
           <button type="button" class="btn btn-danger" data-dismiss="modal">Cancle</button>
