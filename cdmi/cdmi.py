@@ -10,6 +10,7 @@ from django.shortcuts import reverse
 
 from .models import Site
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -138,3 +139,54 @@ def get_all_capabilities(url, access_token):
         logger.warning('Key error for {}'.format(url))
 
     return all_capabilities
+
+
+class FileObject(object):
+    def __init__(self, name, status):
+        self.name = name
+
+        try:
+            type = status['objectType']
+        except KeyError:
+            logger.warning('Key error for {}'.format(name))
+            type = None
+
+        if type == 'application/cdmi-object':
+            self.type = 'File'
+        elif type == 'application/cdmi-container':
+            self.type = 'Directory'
+
+        capabilities_uri = status.get('capabilitiesURI', '')
+        metadata = status['metadata']
+
+        self.capabilities_name = capabilities_uri.rsplit('/', 1)[-1]
+        self.capabilities_latency = metadata.get('cdmi_latency_provided', '')
+        self.capabilities_redundancy = metadata.get('cdmi_data_redundancy_provided', '')
+        self.capabilities_geolocation = metadata.get('cdmi_geographic_placement_provided', '')
+        self.capabilities_storage_lifetime = metadata.get('cdmi_data_storage_lifetime_provided', '')
+        self.capabilities_association_time = metadata.get('cdmi_capability_association_time', '')
+        self.capabilities_throughput = metadata.get('cdmi_throughput_provided', '')
+        self.capabilities_allowed = metadata.get('cdmi_capabilities_allowed_provided', '')
+        self.capabilities_lifetime = metadata.get('cdmi_capability_lifetime_provided', '')
+        self.capabilities_lifetime_action = metadata.get('cdmi_capability_lifetime_action_provided', '')
+        self.capabilities_target = metadata.get('cdmi_capabilities_target',  '')
+        self.capabilities_polling = metadata.get('cdmi_recommended_polling_interval', '')
+
+
+def list_objects(site, path, access_token):
+    url = urljoin(site.site_uri, path)
+    try:
+        children = _query_cdmi(url, access_token)['children']
+    except KeyError:
+        logger.warning('Key error for {}'.format(url))
+        children = []
+
+    object_list = []
+    for child in children:
+        child_url = urljoin(url+'/', child)
+        object_list.append(FileObject(
+            child, _query_cdmi(child_url, access_token)))
+
+    logger.debug('Found objects: {}'.format(object_list))
+
+    return object_list

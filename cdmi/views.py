@@ -101,26 +101,6 @@ def mkdir(request, site, path):
         return redirect('cdmi:browse', site.id, path)
 
 
-def _set_object_capabilities(o, status):
-    capabilities_uri = status.get('capabilitiesURI', '')
-    metadata = status['metadata']
-
-    o.capabilities_name = capabilities_uri.rsplit('/', 1)[-1]
-    o.capabilities_latency = metadata.get('cdmi_latency_provided', '')
-    o.capabilities_redundancy = metadata.get('cdmi_data_redundancy_provided', '')
-    o.capabilities_geolocation = metadata.get('cdmi_geographic_placement_provided', '')
-    o.capabilities_storage_lifetime = metadata.get('cdmi_data_storage_lifetime_provided', '')
-    o.capabilities_association_time = metadata.get('cdmi_capability_association_time', '')
-    o.capabilities_throughput = metadata.get('cdmi_throughput_provided', '')
-    o.capabilities_allowed = metadata.get('cdmi_capabilities_allowed_provided', '')
-    o.capabilities_lifetime = metadata.get('cdmi_capability_lifetime_provided', '')
-    o.capabilities_lifetime_action = metadata.get('cdmi_capability_lifetime_action_provided', '')
-    o.capabilities_target = metadata.get('cdmi_capabilities_target',  '')
-    o.capabilities_polling = metadata.get('cdmi_recommended_polling_interval', '')
-
-    return o
-
-
 @login_required(login_url='/openid/login')
 def browse(request, site, path):
     site = Site.objects.get(id=site)
@@ -147,11 +127,7 @@ def browse(request, site, path):
 
     logger.debug("current path {}".format(path))
 
-    object_list = [
-        _set_object_capabilities(
-            obj, cdmi.get_status(site, os.path.join(path, obj.name),
-                                 request.session['access_token']))
-        for obj in browser.list_objects(path)]
+    object_list = cdmi.list_objects(site, path, request.session['access_token'])
 
     context.update({
             'object_list': object_list,

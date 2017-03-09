@@ -15,13 +15,6 @@ def create_if_not_exists(path):
     if not os.path.exists(path):
         os.makedirs(path)
 
-
-class FileObject(object):
-    def __init__(self, name, type, path=''):
-        self.name = name
-        self.type = type
-
-
 def handle_delete_object(name, path):
     storage_path = os.path.join(path, name)
 
@@ -54,20 +47,3 @@ def handle_create_directory(name, path):
     logger.debug("Create directory {}".format(os_path))
 
     os.makedirs(os_path, exist_ok=True)
-
-
-def list_objects(path):
-    dirs, files = storage.listdir(path)
-    object_list = []
-
-    for d in dirs:
-        o = FileObject(d, 'Directory')
-
-        object_list.append(o)
-
-    for f in files:
-        o = FileObject(f, 'File')
-
-        object_list.append(o)
-
-    return object_list
