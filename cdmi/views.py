@@ -49,7 +49,9 @@ def update(request):
 def delete(request):
     if request.method == 'POST':
         if 'path' in request.POST and 'name' in request.POST:
-            browser.handle_delete_object(request)
+            browser.handle_delete_object(request.user.username,
+                                         request.POST['name'],
+                                         request.POST['path'])
             messages.success(request, '{} deleted'.format(
                 request.POST['name']))
 
@@ -63,7 +65,9 @@ def delete(request):
 def upload(request):
     if request.method == 'POST':
         if 'file' in request.FILES and 'path' in request.POST:
-            browser.handle_uploaded_file(request)
+            browser.handle_uploaded_file(request.user.username,
+                                         request.FILES['file'],
+                                         request.POST['path'])
             messages.success(request, '{} uploaded'.format(
                 request.FILES['file'].name))
 
@@ -77,7 +81,9 @@ def upload(request):
 def mkdir(request):
     if request.method == 'POST':
         if 'path' in request.POST and 'name' in request.POST:
-            browser.handle_create_directory(request)
+            browser.handle_create_directory(request.user.username,
+                                            request.POST['name'],
+                                            request.POST['path'])
             messages.success(request, '{}/{} created'.format(
                 request.POST['path'], request.POST['name']))
 
@@ -110,7 +116,7 @@ def _set_object_capabilities(o, status):
 @login_required(login_url='/openid/login')
 def browse(request):
     username = request.user.username
-    storage_path = browser.user_path(request)
+    storage_path = browser.user_path(username)
     browser.create_if_not_exists(storage_path)
     path = storage_path
 

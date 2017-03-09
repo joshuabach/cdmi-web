@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 storage = default_storage
 
 
-def user_path(request):
-    return os.path.join('', request.user.username)
+def user_path(username):
+    return os.path.join('', username)
 
 
 def create_if_not_exists(path):
@@ -26,11 +26,8 @@ class FileObject(object):
         self.type = type
 
 
-def handle_delete_object(request):
-    name = request.POST['name']
-    path = request.POST['path']
-
-    storage_path = os.path.join(user_path(request), path, name)
+def handle_delete_object(username, name, path):
+    storage_path = os.path.join(user_path(username), path, name)
 
     logger.debug("Delete {}".format(storage_path))
 
@@ -41,26 +38,21 @@ def handle_delete_object(request):
         shutil.rmtree(storage.path(storage_path))
 
 
-def handle_uploaded_file(request):
-    f = request.FILES['file']
-    path = request.POST['path']
-    name = f.name
+def handle_uploaded_file(username, file, path):
+    name = file.name
 
-    storage_path = os.path.join(user_path(request), path, name)
+    storage_path = os.path.join(user_path(username), path, name)
     os_path = os.path.join(settings.MEDIA_ROOT, storage_path)
 
     logger.debug("Upload {}".format(os_path))
 
     with open(os_path, 'wb+') as destination:
-        for chunk in f.chunks():
+        for chunk in file.chunks():
             destination.write(chunk)
 
 
-def handle_create_directory(request):
-    path = request.POST['path']
-    name = request.POST['name']
-
-    new_dir = os.path.join(user_path(request), path, name)
+def handle_create_directory(username, name, path):
+    new_dir = os.path.join(user_path(username), path, name)
     os_path = os.path.join(settings.MEDIA_ROOT, new_dir)
 
     logger.debug("Create directory {}".format(os_path))
