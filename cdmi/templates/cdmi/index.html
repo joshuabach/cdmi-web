@@ -8,11 +8,16 @@
 <link rel="stylesheet" type="text/css" href="{% static 'cdmi/css/bootstrap-sortable.css' %}" />
 
 <script>
-  <!-- Hide all other details when one is shown -->
   $(document).ready(function() {
+    <!-- Hide all other details when one is shown -->
     var $allDetails = $('#details');
     $allDetails.on('show.bs.collapse','.collapse', function() {
         $allDetails.find('.collapse.in').collapse('hide');
+    });
+
+    <!-- Clickable rows -->
+    $("tr.clickable").click(function() {
+        window.location = $(this).data("href");
     });
   });
 </script>
@@ -22,7 +27,7 @@
 <div class="container">
   <div class="container">
     <h1>Available CDMI Endpoints</h1>
-    <table class="table sortable">
+    <table class="table sortable table-hover">
       <thead>
         <tr>
           <th data-defaultsort="disabled"></th>
@@ -33,7 +38,7 @@
       </thead>
       <tbody>
         {% for site in sites %}
-        <tr>
+        <tr class="clickable" data-href="{% url 'cdmi:browse' site.id '' %}">
           <td><img src="{{ site.logo_uri }}" width="50"></td>
           <td>{{ site.site_name }}</td>
           <td><a href="{{ site.site_uri }}">{{ site.site_uri }}</a></td>

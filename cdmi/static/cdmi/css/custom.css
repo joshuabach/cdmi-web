@@ -6,6 +6,10 @@ body {
   margin-bottom: 20px;
 }
 
+tr.clickable {
+  cursor: pointer;
+}
+
 li {
     line-height: 35px;
     text-align: center;
