@@ -12,6 +12,8 @@ class Site(models.Model):
             # Useful for testing
             ('basic', 'HTTP basic authentication with restadmin:restadmin')],
         max_length=10)
+    browser_module = models.CharField(
+        blank=True, default='', max_length=128)
 
     last_modified = models.DateTimeField(auto_now=True)
 

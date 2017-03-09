@@ -68,8 +68,8 @@ def _query_cdmi(url, access_token):
     return json_response
 
 
-def put_capabilities_class(path, access_token, is_dir, capabilities):
-    cdmi_uri = settings.CDMI_URI
+def put_capabilities_class(site, path, access_token, is_dir, capabilities):
+    cdmi_uri = site.site_uri
     url = urljoin(cdmi_uri, path)
 
     body = {'capabilitiesURI': capabilities}
@@ -78,8 +78,8 @@ def put_capabilities_class(path, access_token, is_dir, capabilities):
     return response
 
 
-def get_status(path, access_token):
-    cdmi_uri = settings.CDMI_URI
+def get_status(site, path, access_token):
+    cdmi_uri = site.site_uri
     url = urljoin(cdmi_uri, path)
 
     status = _query_cdmi(url, access_token)
@@ -101,7 +101,7 @@ def get_capabilities_class(url, access_token, classes=None):
 
         datapath = None
         if urlsplit(url).netloc == urlsplit(settings.CDMI_URI).netloc:
-            datapath = reverse('cdmi:browse')
+            datapath = reverse('cdmi:browse', kwargs={'site': 1})  # TODO
 
         qos = [storage_type
                for storage_type, predicate in settings.STORAGE_TYPES

@@ -36,7 +36,7 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="#">/{% if path != '.' %}{{ path }}{% endif %}</a>
+        <a class="navbar-brand" href="#">{{ site.site_uri }}/{% if path != '.' %}{{ path }}{% endif %}</a>
       </div>
       <div id="navbar" class="navbar-collapse collapse">
         <ul class="nav navbar-nav navbar-right">
@@ -74,11 +74,9 @@
       {% if path and path != '.' %}
       <tr>
         <td>
-          <form action="{% url 'cdmi:browse' %}" method="get">
+          <form action="{% url 'cdmi:browse' site.id %}" method="get">
             {% csrf_token %}
-            <input type="hidden" name="path" value="{{ path|dirname|dirname }}" />
-            <input type="hidden" name="name" value="{{ path|dirname|basename }}" />
-            <input type="hidden" name="chdir" value="chdir" />
+            <input type="hidden" name="path" value="{{ path|dirname }}" />
             <button type="submit" class="btn btn-link">..</button>
           </form>
         </td>
@@ -97,11 +95,9 @@
         </td>
         {% else %}
         <td>
-          <form action="{% url 'cdmi:browse' %}" method="get">
+          <form action="{% url 'cdmi:browse' site.id %}" method="get">
             {% csrf_token %}
-            <input type="hidden" name="path" value="{{ path }}" />
-            <input type="hidden" name="name" value="{{ o.name }}" />
-            <input type="hidden" name="chdir" value="chdir" />
+            <input type="hidden" name="path" value="{% if path %}{{ path }}/{% endif %}{{ o.name }}" />
             <button type="submit" class="btn btn-link">{{ o.name }}</button>
           </form>
         </td>
@@ -133,7 +129,7 @@
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Supported <span class="caret"></span></a>
             <ul class="dropdown-menu">
 	            {% for allowed in o.capabilities_allowed %}
-              <form action="{% url 'cdmi:browse' %}" method="get">
+              <form action="{% url 'cdmi:browse' site.id %}" method="get">
                 {% csrf_token %}
                 <input type="hidden" name="path" value="{{ path }}" />
                 <input type="hidden" name="name" value="{{ o.name }}" />
@@ -156,7 +152,7 @@
           {% endif %}
         </td>
         <td>
-          <form action="{% url 'cdmi:delete' %}" method="post">
+          <form action="{% url 'cdmi:delete' site.id %}" method="post">
             {% csrf_token %}
             <input type="hidden" name="path" value="{{ path }}" />
             <input type="hidden" name="name" value="{{ o.name }}" />
@@ -183,7 +179,7 @@
         <h4 class="modal-title" id="uploadLabel">Upload file</h4>
       </div>
       <div class="modal-body">
-        <form action="{% url 'cdmi:upload' %}" method="post" enctype="multipart/form-data">
+        <form action="{% url 'cdmi:upload' site.id %}" method="post" enctype="multipart/form-data">
           {% csrf_token %}
           <div class="form-group">
             <input type="file" id="file" name="file">
@@ -209,7 +205,7 @@
         <h4 class="modal-title" id="mkdirLabel">Create Directory</h4>
       </div>
       <div class="modal-body">
-        <form action="{% url 'cdmi:mkdir' %}" method="post">
+        <form action="{% url 'cdmi:mkdir' site.id %}" method="post">
           {% csrf_token %}
           <div class="form-group">
             <input type="text" id="name" name="name">
@@ -264,7 +260,7 @@
         </table>
       </div>
       <div class="modal-footer">
-        <form action="{% url 'cdmi:update' %}" method="post">
+        <form action="{% url 'cdmi:update' site.id %}" method="post">
           {% csrf_token %}
           <input type="hidden" name="qos" value="{{ object_info.url }}"></input>
           <input type="hidden" name="path" value="{{ object_info.path }}"></input>

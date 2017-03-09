@@ -10,19 +10,20 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 
+
 from .models import Site
 from . import cdmi, browser
 
 logger = logging.getLogger(__name__)
 
 
-def handle_update_object(request):
+def handle_update_object(request, site):
     path = request.POST['path']
     qos = request.POST['qos']
     capabilities = urlsplit(qos).path
 
     response = cdmi.put_capabilities_class(
-        path, request.session['access_token'],
+        site, path, request.session['access_token'],
         'is_dir' in request.POST and request.POST['is_dir'] == 'True',
         capabilities)
 
@@ -30,67 +31,78 @@ def handle_update_object(request):
 
 
 @login_required(login_url='/openid/login')
-def update(request):
+def update(request, site):
+    site = Site.objects.get(id=site)
+
     if request.method == 'POST':
         if 'qos' in request.POST and 'path' in request.POST:
             logger.debug("Change {} to {}".format(
                 request.POST['path'], request.POST['qos']))
-            handle_update_object(request)
+            handle_update_object(request, site)
             messages.success(request, '{} updated'.format(
                 request.POST['path']))
 
     if request.method == 'POST' and 'next' in request.POST:
         return redirect(request.POST['next'])
     else:
-        return redirect('cdmi:browse')
+        return redirect('cdmi:browse', site.id)
 
 
 @login_required(login_url='/openid/login')
-def delete(request):
+def delete(request, site):
+    site = Site.objects.get(id=site)
+
     if request.method == 'POST':
         if 'path' in request.POST and 'name' in request.POST:
-            browser.handle_delete_object(request.user.username,
-                                         request.POST['name'],
-                                         request.POST['path'])
-            messages.success(request, '{} deleted'.format(
-                request.POST['name']))
+            if site.browser_module == 'browser':
+                browser.handle_delete_object(request.user.username,
+                                             request.POST['name'],
+                                             request.POST['path'])
+
+                messages.success(request, '{} deleted'.format(
+                    request.POST['name']))
 
     if request.method == 'POST' and 'next' in request.POST:
         return redirect(request.POST['next'])
     else:
-        return redirect('cdmi:browse')
+        return redirect('cdmi:browse', site.id)
 
 
 @login_required(login_url='/openid/login')
-def upload(request):
+def upload(request, site):
+    site = Site.objects.get(id=site)
     if request.method == 'POST':
         if 'file' in request.FILES and 'path' in request.POST:
-            browser.handle_uploaded_file(request.user.username,
-                                         request.FILES['file'],
-                                         request.POST['path'])
-            messages.success(request, '{} uploaded'.format(
-                request.FILES['file'].name))
+            if site.browser_module == 'browser':
+                browser.handle_uploaded_file(request.user.username,
+                                             request.FILES['file'],
+                                             request.POST['path'])
+                messages.success(request, '{} uploaded'.format(
+                    request.FILES['file'].name))
 
     if request.method == 'POST' and 'next' in request.POST:
         return redirect(request.POST['next'])
     else:
-        return redirect('cdmi:browse')
+        return redirect('cdmi:browse', site.id)
 
 
 @login_required(login_url='/openid/login')
-def mkdir(request):
+def mkdir(request, site):
+    site = Site.objects.get(id=site)
+
     if request.method == 'POST':
         if 'path' in request.POST and 'name' in request.POST:
-            browser.handle_create_directory(request.user.username,
-                                            request.POST['name'],
-                                            request.POST['path'])
-            messages.success(request, '{}/{} created'.format(
-                request.POST['path'], request.POST['name']))
+            if site.browser_module == 'browser':
+                browser.handle_create_directory(request.user.username,
+                                                request.POST['name'],
+                                                request.POST['path'])
+                messages.success(request, '{}/{} created'.format(
+                    request.POST['path'], request.POST['name']))
 
     if request.method == 'POST' and 'next' in request.POST:
         return redirect(request.POST['next'])
     else:
-        return redirect('cdmi:browse')
+        return redirect('cdmi:browse', site.id)
 
 
 def _set_object_capabilities(o, status):
@@ -114,22 +126,23 @@ def _set_object_capabilities(o, status):
 
 
 @login_required(login_url='/openid/login')
-def browse(request):
+def browse(request, site):
+    site = Site.objects.get(id=site)
+
     username = request.user.username
+    # TODO
     storage_path = browser.user_path(username)
     browser.create_if_not_exists(storage_path)
     path = storage_path
 
     context = dict()
 
-    if 'chdir' in request.GET:
-        if 'path' in request.GET and 'name' in request.GET:
-            path = os.path.join(path, request.GET['path'], request.GET['name'])
+    if 'path' in request.GET:
+        path = os.path.join(path, request.GET['path'])
 
     object_info = None
     if 'info' in request.GET:
-        if 'path' in request.GET and 'name' in request.GET:
-            path = os.path.join(path, request.GET['path'])
+        if 'name' in request.GET:
             url = urljoin(settings.CDMI_URI, request.GET['info'])
             object_info = cdmi.get_capabilities_class(
                 url, request.session['access_token'])
@@ -156,6 +169,7 @@ def browse(request):
             'object_list': object_list,
             'username': username,
             'path': os.path.relpath(path, storage_path),
+            'site': site,
             'object_info': object_info
         })
 
