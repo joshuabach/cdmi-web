@@ -141,15 +141,25 @@ def get_all_capabilities(url, access_token):
     return all_capabilities
 
 
+class ObjectDeletedError(Exception):
+    pass
+
+
 class FileObject(object):
     def __init__(self, name, status):
         self.name = name
 
         try:
             type = status['objectType']
+            cap = status['capabilitiesURI']
         except KeyError:
             logger.warning('Key error for {}'.format(name))
             type = None
+            cap = None
+
+        if cap == '/cdmi_capabilities/container' \
+           or cap == '/cdmi_capabilities/dataobject':
+            raise ObjectDeletedError
 
         if type == 'application/cdmi-object':
             self.type = 'File'
@@ -184,8 +194,12 @@ def list_objects(site, path, access_token):
     object_list = []
     for child in children:
         child_url = urljoin(url+'/', child)
-        object_list.append(FileObject(
-            child, _query_cdmi(child_url, access_token)))
+        try:
+            object_list.append(FileObject(
+                child, _query_cdmi(child_url, access_token)))
+        except ObjectDeletedError:
+            logger.warning('{} returned non-existent object {}'.format(
+                site.site_uri, child))
 
     logger.debug('Found objects: {}'.format(object_list))
 
