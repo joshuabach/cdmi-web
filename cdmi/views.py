@@ -6,15 +6,31 @@ from requests.compat import urljoin, urlsplit
 from django.shortcuts import render, redirect
 from django.views import generic
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import user_passes_test
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.sessions.models import Session
 
 
 from .models import Site
 from . import cdmi, browser
 
 logger = logging.getLogger(__name__)
+
+
+def has_access_token(user):
+    for session in Session.objects.all():
+        data = session.get_decoded()
+        logger.debug(data)
+        if '_auth_user_id' in data and int(data['_auth_user_id']) == user.id:
+            logger.debug("{} for {}:{} with session {}".format(
+                'Succeeding' if 'access_token' in data else 'Failing',
+                user.id, user.username, data))
+
+            return 'access_token' in data
+
+    logger.debug("No session found for {}:{}".format(user.id, user.username))
+    return False
 
 
 def handle_update_object(request, site, path):
@@ -29,7 +45,7 @@ def handle_update_object(request, site, path):
     logger.debug(response)
 
 
-@login_required(login_url='/openid/login')
+@user_passes_test(has_access_token, login_url='/openid/login/')
 def update(request, site, path):
     site = Site.objects.get(id=site)
 
@@ -47,7 +63,7 @@ def update(request, site, path):
         return redirect('cdmi:browse', site.id, path)
 
 
-@login_required(login_url='/openid/login')
+@user_passes_test(has_access_token, login_url='/openid/login/')
 def delete(request, site, path):
     site = Site.objects.get(id=site)
 
@@ -66,7 +82,7 @@ def delete(request, site, path):
         return redirect('cdmi:browse', site.id, path)
 
 
-@login_required(login_url='/openid/login')
+@user_passes_test(has_access_token, login_url='/openid/login/')
 def upload(request, site, path):
     site = Site.objects.get(id=site)
     if request.method == 'POST':
@@ -83,7 +99,7 @@ def upload(request, site, path):
         return redirect('cdmi:browse', site.id, path)
 
 
-@login_required(login_url='/openid/login')
+@user_passes_test(has_access_token, login_url='/openid/login/')
 def mkdir(request, site, path):
     site = Site.objects.get(id=site)
 
@@ -101,7 +117,7 @@ def mkdir(request, site, path):
         return redirect('cdmi:browse', site.id, path)
 
 
-@login_required(login_url='/openid/login')
+@user_passes_test(has_access_token, login_url='/openid/login/')
 def browse(request, site, path):
     site = Site.objects.get(id=site)
 
@@ -140,14 +156,17 @@ def browse(request, site, path):
     return render(request, 'cdmi/browse.html', context)
 
 
-class IndexView(LoginRequiredMixin, generic.ListView):
+class IndexView(UserPassesTestMixin, generic.ListView):
     template_name = 'cdmi/index.html'
-    login_url = '/openid/login'
-    redirect_field_name = ''
+    login_url = '/openid/login/'
+    redirect_field_name = 'next'
 
     model = Site
 
     context_object_name = 'storage_list'
+
+    def test_func(self):
+        return has_access_token(self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
