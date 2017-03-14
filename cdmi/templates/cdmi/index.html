@@ -67,7 +67,7 @@
       <tbody>
         {% for qos in qualities_of_service %}
         <tr style="cursor: pointer;" data-toggle="collapse"
-            data-target="#details-{{ qos.name|slugify }}">
+            data-target="#details-{{ qos.url|slugify }}">
           <td>{{ qos.name }}</td>
           <td>{{ qos.latency }}</td>
           <td>{{ qos.copies }}</td>
@@ -93,7 +93,7 @@
     <div id="details">
       {% for qos in qualities_of_service %}
       <div class="collapse"
-           id="details-{{ qos.name|slugify }}">
+           id="details-{{ qos.url|slugify }}">
         <h2>{{ qos.name }}</h2>
         <table class="table">
           <tbody>
