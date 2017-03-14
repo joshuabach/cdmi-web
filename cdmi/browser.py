@@ -23,8 +23,11 @@ def handle_uploaded_file(site, file, path):
 
     storage_path = os.path.join(path, name)
     os_path = os.path.join(site.storage.location, storage_path)
+    os_dir, _ = os.path.split(os_path)
 
     logger.debug("Upload {}".format(os_path))
+
+    os.makedirs(os_dir, exist_ok=True)
 
     with open(os_path, 'wb+') as destination:
         for chunk in file.chunks():
