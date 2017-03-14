@@ -74,6 +74,8 @@ STORAGE_TYPES = [
     ('archival', lambda cap: int(cap['metadata']['cdmi_latency']) > 200)
 ]
 
+LOGIN_URL = 'openid:login'
+
 # Application definition
 
 INSTALLED_APPS = [

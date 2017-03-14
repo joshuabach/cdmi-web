@@ -39,7 +39,7 @@ def handle_update_object(request, site, path):
     logger.debug(response)
 
 
-@user_passes_test(has_access_token, login_url='/openid/login/')
+@user_passes_test(has_access_token)
 def update(request, site, path):
     site = Site.objects.get(id=site)
 
@@ -57,7 +57,7 @@ def update(request, site, path):
         return redirect('cdmi:browse', site.id, path)
 
 
-@user_passes_test(has_access_token, login_url='/openid/login/')
+@user_passes_test(has_access_token)
 def delete(request, site, path):
     site = Site.objects.get(id=site)
 
@@ -76,7 +76,7 @@ def delete(request, site, path):
         return redirect('cdmi:browse', site.id, path)
 
 
-@user_passes_test(has_access_token, login_url='/openid/login/')
+@user_passes_test(has_access_token)
 def upload(request, site, path):
     site = Site.objects.get(id=site)
     if request.method == 'POST':
@@ -93,7 +93,7 @@ def upload(request, site, path):
         return redirect('cdmi:browse', site.id, path)
 
 
-@user_passes_test(has_access_token, login_url='/openid/login/')
+@user_passes_test(has_access_token)
 def mkdir(request, site, path):
     site = Site.objects.get(id=site)
 
@@ -111,7 +111,7 @@ def mkdir(request, site, path):
         return redirect('cdmi:browse', site.id, path)
 
 
-@user_passes_test(has_access_token, login_url='/openid/login/')
+@user_passes_test(has_access_token)
 def browse(request, site, path):
     site = Site.objects.get(id=site)
 
@@ -152,7 +152,6 @@ def browse(request, site, path):
 
 class IndexView(UserPassesTestMixin, generic.ListView):
     template_name = 'cdmi/index.html'
-    login_url = '/openid/login/'
     redirect_field_name = 'next'
 
     model = Site
