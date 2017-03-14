@@ -20,6 +20,10 @@ class Site(models.Model):
     def __str__(self):
         return self.site_name
 
+    @property
+    def can_browse(self):
+        return self.browser_module != ''
+
 
 class StorageType(models.Model):
     type_name = models.CharField(max_length=200)

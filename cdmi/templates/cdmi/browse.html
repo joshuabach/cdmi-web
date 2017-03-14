@@ -42,25 +42,25 @@
         <ul class="nav navbar-nav navbar-right">
           <li>
             <button data-toggle="modal"
-                    {% if site.browser_module == '' %}
+                    {% if not site.can_browse %}
                     title="Unavailable for this CDMI site"
                     {% else %}
                     data-target="#mkdir"
                     {% endif %}
                     class="btn btn-primary
-                           {% if site.browser_module == '' %}disabled{% endif %}">
+                           {% if not site.can_browse %}disabled{% endif %}">
               Create Directory
             </button>
           </li>
           <li>
             <button data-toggle="modal"
-                    {% if site.browser_module == '' %}
+                    {% if not site.can_browse %}
                     title="Unavailable for this CDMI site"
                     {% else %}
                     data-target="#upload"
                     {% endif %}
                     class="btn btn-primary
-                           {% if site.browser_module == '' %}disabled{% endif %}">
+                           {% if not site.can_browse %}disabled{% endif %}">
               Upload File
             </button>
           </li>
@@ -188,8 +188,8 @@
             {% csrf_token %}
             <input type="hidden" name="name" value="{{ o.name }}" />
             <button class="btn bare-btn btn-small
-                           {% if site.browser_module == '' %}disabled{% endif %}"
-                    {% if site.browser_module == '' %}
+                           {% if not site.can_browse %}disabled{% endif %}"
+                    {% if not site.can_browse %}
                     title="Unavailable for this CDMI site"
                     {% endif %}
                     type="submit" style="color: red">Delete</button>

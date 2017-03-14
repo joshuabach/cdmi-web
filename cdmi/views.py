@@ -63,7 +63,7 @@ def delete(request, site, path):
 
     if request.method == 'POST':
         if 'name' in request.POST:
-            if site.browser_module == 'browser':
+            if site.can_browse:
                 browser.handle_delete_object(request.POST['name'],
                                              path)
 
@@ -81,7 +81,7 @@ def upload(request, site, path):
     site = Site.objects.get(id=site)
     if request.method == 'POST':
         if 'file' in request.FILES:
-            if site.browser_module == 'browser':
+            if site.can_browse:
                 browser.handle_uploaded_file(request.FILES['file'],
                                              path)
                 messages.success(request, '{} uploaded'.format(
@@ -99,7 +99,7 @@ def mkdir(request, site, path):
 
     if request.method == 'POST':
         if 'name' in request.POST:
-            if site.browser_module == 'browser':
+            if site.can_browse:
                 browser.handle_create_directory(request.POST['name'],
                                                 path)
                 messages.success(request, '{}/{} created'.format(
