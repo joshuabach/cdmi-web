@@ -77,8 +77,8 @@
         <th data-defaultsort="asc">Name</th>
         <th>Type</th>
         <th>Current QoS</th>
-        <th data-defaultsort="disabled">Change QoS</th>
         <th data-defaultsort="disabled"></th>
+        <th data-defaultsort="disabled">Target QoS</th>
         <th data-defaultsort="disabled"></th>
     </thead>
     <tbody>
@@ -119,8 +119,8 @@
           {{ o.type }}
         </td>
         <td>
-          <a  data-toggle="collapse" href="#{{ o.name|slugify }}"
-              aria-expanded="false" aria-controls="{{ o.name|slugify }}">
+          <a data-toggle="collapse" href="#{{ o.name|slugify }}"
+             aria-expanded="false" aria-controls="{{ o.name|slugify }}">
             {{ o.capabilities_name }}
           </a>
           <div class="collapse" id="{{ o.name|slugify }}">
@@ -137,11 +137,14 @@
             </div>
           </div>
         </td>
+        <td style="width: 200px">
+          {% if o.capabilities_target %}
+          <img src="{% static 'cdmi/img/progress.gif' %}" alt="loading" width="150">
+          {% endif %}
+        </td>
         <td>
           {% if o.capabilities_target %}
-          <div style="cursor:not-allowed">
-            In transition to: <em>{{ o.capabilities_target|basename }}</em>
-          </div>
+          <em>{{ o.capabilities_target|basename }}</em>
           {% else %}
           <div class="dropdown">
             <!-- <li class="dropdown"> -->
@@ -153,7 +156,7 @@
                {% endif %}
                data-toggle="dropdown" role="button"
                aria-haspopup="true" aria-expanded="false">
-              Supported<span class="caret"></span>
+              Select<span class="caret"></span>
             </a>
             <ul class="dropdown-menu">
 	            {% for allowed in o.capabilities_allowed %}
@@ -172,13 +175,8 @@
             </ul>
             <!-- </li> -->
           </div>
-          {% endif %}
         </td>
-        <td>
-          {% if o.capabilities_target %}
-          <img src="{% static 'cdmi/img/loader.gif' %}" alt="loading" width="20">
-          {% endif %}
-        </td>
+        {% endif %}
         <td>
           <form action="{% url 'cdmi:delete' site.id path %}" method="post">
             {% csrf_token %}
