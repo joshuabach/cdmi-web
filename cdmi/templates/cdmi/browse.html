@@ -165,6 +165,7 @@
                 <input type="hidden" name="name" value="{{ o.name }}" />
                 <input type="hidden" name="info" value="{{ allowed }}" />
                 <input type="hidden" name="nextbutone" value="{{ request.get_full_path }}" />
+                <input type="hidden" name="type" value="{{ o.type }}"
                 <li>
                   <button class="btn btn-link" type="submit">{{ allowed|cut:"/cdmi_capabilities/" }}</button>
                 </li>

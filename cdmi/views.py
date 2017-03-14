@@ -133,7 +133,7 @@ def browse(request, site, path):
         object_info['path'] = os.path.join(path, request.GET['name'])
         abs_path = os.path.join(site.storage.location, path,
                                 request.GET['name'])
-        object_info['is_dir'] = os.path.isdir(abs_path)
+        object_info['is_dir'] = request.GET['type'] == 'Directory'
 
         logger.debug("Is dir? {} {}".format(
             abs_path, os.path.isdir(abs_path)))
