@@ -100,18 +100,13 @@ def get_capabilities_class(url, access_token, classes=None):
         transitions = capabilities['metadata']['cdmi_capabilities_allowed']
         transitions = [x.rsplit('/', 1)[-1] for x in transitions]
 
-        datapath = None
-        if urlsplit(url).netloc == urlsplit(settings.CDMI_URI).netloc:
-            datapath = reverse('cdmi:browse', kwargs={'site': 1, 'path': ''})  # TODO
-
         qos = [storage_type
                for storage_type, predicate in settings.STORAGE_TYPES
                if predicate(capabilities)]
 
         capabilities_class = dict(
             name=name, latency=latency, copies=copies, location=location,
-            storage_types=qos, transitions=transitions, url=url,
-            datapath=datapath)
+            storage_types=qos, transitions=transitions, url=url)
 
         logger.debug('QoS for {}: {}'.format(name, qos))
 

@@ -165,11 +165,20 @@ class IndexView(UserPassesTestMixin, generic.ListView):
         context = super(IndexView, self).get_context_data(**kwargs)
         context['username'] = self.request.user.username
         context['sites'] = Site.objects.all()
+        for site in context['sites']:
+            site.root_container = cdmi.get_status(
+                site, '/',
+                self.request.session['access_token'])
 
         context['qualities_of_service'] = []
-        for site in Site.objects.all():
-            context['qualities_of_service'] += cdmi.get_all_capabilities(
+        for site in context['sites']:
+            qoses = cdmi.get_all_capabilities(
                 site.site_uri,
                 self.request.session['access_token'])
+
+            for qos in qoses:
+                qos['site'] = site
+
+            context['qualities_of_service'] += qoses
 
         return context
