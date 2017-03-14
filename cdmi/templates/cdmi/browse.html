@@ -130,7 +130,8 @@
           {{ o.type }}
         </td>
         <td>
-          <a  data-toggle="collapse" href="#{{ o.name|slugify }}" aria-expanded="false" aria-controls="{{ o.name|slugify }}">
+          <a  data-toggle="collapse" href="#{{ o.name|slugify }}"
+              aria-expanded="false" aria-controls="{{ o.name|slugify }}">
             {{ o.capabilities_name }}
           </a>
           <div class="collapse" id="{{ o.name|slugify }}">
@@ -148,6 +149,11 @@
           </div>
         </td>
         <td>
+          {% if o.capabilities_target %}
+          <div style="cursor:not-allowed">
+            In transition to: <em>{{ o.capabilities_target|basename }}</em>
+          </div>
+          {% else %}
           <div class="dropdown">
             <!-- <li class="dropdown"> -->
             <a href="#" class="dropdown-toggle
@@ -177,6 +183,7 @@
             </ul>
             <!-- </li> -->
           </div>
+          {% endif %}
         </td>
         <td>
           {% if o.capabilities_target %}
