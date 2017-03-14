@@ -10,10 +10,6 @@ logger = logging.getLogger(__name__)
 storage = default_storage
 
 
-def create_if_not_exists(path):
-    path = os.path.join(settings.MEDIA_ROOT, path)
-    if not os.path.exists(path):
-        os.makedirs(path)
 
 def handle_delete_object(name, path):
     storage_path = os.path.join(path, name)
