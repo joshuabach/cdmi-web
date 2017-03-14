@@ -21,15 +21,9 @@ logger = logging.getLogger(__name__)
 def has_access_token(user):
     for session in Session.objects.all():
         data = session.get_decoded()
-        logger.debug(data)
         if '_auth_user_id' in data and int(data['_auth_user_id']) == user.id:
-            logger.debug("{} for {}:{} with session {}".format(
-                'Succeeding' if 'access_token' in data else 'Failing',
-                user.id, user.username, data))
-
             return 'access_token' in data
 
-    logger.debug("No session found for {}:{}".format(user.id, user.username))
     return False
 
 
