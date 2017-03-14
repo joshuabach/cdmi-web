@@ -5,7 +5,6 @@ from requests.compat import urljoin, urlsplit
 
 from django.shortcuts import render, redirect
 from django.views import generic
-from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
@@ -64,8 +63,10 @@ def delete(request, site, path):
     if request.method == 'POST':
         if 'name' in request.POST:
             if site.can_browse:
-                browser.handle_delete_object(request.POST['name'],
-                                             path)
+                browser.handle_delete_object(
+                    site,
+                    request.POST['name'],
+                    path)
 
                 messages.success(request, '{} deleted'.format(
                     request.POST['name']))
@@ -82,8 +83,10 @@ def upload(request, site, path):
     if request.method == 'POST':
         if 'file' in request.FILES:
             if site.can_browse:
-                browser.handle_uploaded_file(request.FILES['file'],
-                                             path)
+                browser.handle_uploaded_file(
+                    site,
+                    request.FILES['file'],
+                    path)
                 messages.success(request, '{} uploaded'.format(
                     request.FILES['file'].name))
 
@@ -100,8 +103,10 @@ def mkdir(request, site, path):
     if request.method == 'POST':
         if 'name' in request.POST:
             if site.can_browse:
-                browser.handle_create_directory(request.POST['name'],
-                                                path)
+                browser.handle_create_directory(
+                    site,
+                    request.POST['name'],
+                    path)
                 messages.success(request, '{}/{} created'.format(
                     path, request.POST['name']))
 
@@ -126,7 +131,7 @@ def browse(request, site, path):
             url, request.session['access_token'])
         object_info['url'] = url
         object_info['path'] = os.path.join(path, request.GET['name'])
-        abs_path = os.path.join(settings.MEDIA_ROOT, path,
+        abs_path = os.path.join(site.storage.location, path,
                                 request.GET['name'])
         object_info['is_dir'] = os.path.isdir(abs_path)
 

@@ -1,4 +1,11 @@
 from django.db import models
+from django.core.files.storage import FileSystemStorage
+from django.urls import reverse
+
+
+class CantBrowseSite(Exception):
+    def __init__(self, site):
+        self.site = site
 
 
 class Site(models.Model):
@@ -12,7 +19,7 @@ class Site(models.Model):
             # Useful for testing
             ('basic', 'HTTP basic authentication with restadmin:restadmin')],
         max_length=10)
-    browser_module = models.CharField(
+    browser_path = models.CharField(
         blank=True, default='', max_length=128)
 
     last_modified = models.DateTimeField(auto_now=True)
@@ -22,7 +29,16 @@ class Site(models.Model):
 
     @property
     def can_browse(self):
-        return self.browser_module != ''
+        return self.browser_path != ''
+
+    @property
+    def storage(self):
+        if self.can_browse:
+            return FileSystemStorage(
+                location=self.browser_path,
+                base_url=reverse('cdmi:browse', args=[self.id, '']))
+        else:
+            raise CantBrowseSite(self)
 
 
 class StorageType(models.Model):
