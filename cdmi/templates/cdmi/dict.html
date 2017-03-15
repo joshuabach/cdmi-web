@@ -1,0 +1,28 @@
+{% load utils %}
+
+{% if object %}
+{% if object|is_list %}
+<ul class="list">
+  {% for element in object %}
+  <li>
+    {% include 'cdmi/dict.html' with object=element %}
+  </li>
+  {% endfor %}
+</ul>
+{% elif object|is_dict %}
+<table class="table">
+  <tbody>
+    {% for key, value in object.items %}
+    <tr>
+      <td>{{ key|capfirst }}</td>
+      <td>{% include 'cdmi/dict.html' with object=value %}</td>
+    {% endfor %}
+  </tbody>
+</table>
+{% elif object|is_string and object|is_url %}
+<a href="{{ object }}">{{ object }}</a>
+{% else %}
+{{ object }}
+{% endif %}
+{% endif %}
+

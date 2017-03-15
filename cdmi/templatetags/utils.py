@@ -1,4 +1,5 @@
 import os
+import re
 
 from django import template
 from django.template.defaultfilters import stringfilter
@@ -21,3 +22,23 @@ def dirname(path):
 def basename(path):
     _, basename = os.path.split(path)
     return basename
+
+
+@register.filter
+def is_url(string):
+    return re.search('^http', string)
+
+
+@register.filter
+def is_list(value):
+    return isinstance(value, list)
+
+
+@register.filter
+def is_dict(value):
+    return isinstance(value, dict)
+
+
+@register.filter
+def is_string(value):
+    return isinstance(value, str)
