@@ -64,7 +64,10 @@
       {% for qos in qualities_of_service %}
       <div class="collapse"
            id="details-{{ qos.url|slugify }}">
-        <h2>{{ qos.name }}</h2>
+        <h2 class="alignleft">{{ qos.name }}</h2>
+        <h2 class="alignright">
+          <a class="btn btn-primary" href="{% url 'cdmi:browse' qos.site.id '' %}">Browse</a>
+        </h2>
         <table class="table">
           <tbody>
             <tr>

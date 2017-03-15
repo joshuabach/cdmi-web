@@ -28,3 +28,12 @@ li {
 .disabled:hover {
     text-decoration: none;
 }
+
+
+.alignleft {
+    float: left;
+}
+
+.alignright {
+    float: right;
+}
