@@ -31,9 +31,15 @@
     return this.each(function() {
       var entry = $(this);
 
-      $("#select-" + entry.attr('data-id')).css('display', 'none');
-      $("#progress-" + entry.attr('data-id')).css('display', 'block');
-      $("#target-" + entry.attr('data-id')).css('display', 'block');
+      var select = $("#select-" + entry.attr('data-id'));
+      var progress = $("#progress-" + entry.attr('data-id'));
+      var target = $("#target-" + entry.attr('data-id'));
+      var qos = $("#qos-" + entry.attr('data-id'));
+
+      select.css('display', 'none');
+      progress.css('display', 'block');
+      target.css('display', 'block');
+      select.children('ul[class=dropdown-menu]').empty();
 
       setTimeout(function() {
         var url = "{% url 'cdmi:object_info' site.id path %}/" + entry.attr('data-name');
@@ -45,10 +51,34 @@
             entry.poll(next_timeout);
           } else {
             console.log("Polled %o, transition finished", url) ;
-            $("#progress-" + entry.attr('data-id')).css('display', 'none');
-            $("#target-" + entry.attr('data-id')).css('display', 'none');
-            $("#select-" + entry.attr('data-id')).css('display', 'block');
-          }
+            progress.css('display', 'none');
+            target.css('display', 'none');
+            select.css('display', 'block');
+
+            var new_capability = data.capabilitiesURI.split('/').pop();
+            qos[0].innerHTML = new_capability;
+
+            // now we have to update the possible target capabilities
+            var capabilities_allowed = data.metadata.cdmi_capabilities_allowed_provided;
+            if (capabilities_allowed.length > 0) {
+              // TODO
+              capabilities_allowed.forEach(function(target_capability) {
+                select.children('ul[class=dropdown-menu]').append(
+                  $('<li>').append(
+                    $('<button>').attr('class', 'btn btn-link')
+                                 .click(function() {
+                                          changeqos("{{ path }}/"+entry.attr('data-name'),
+                                                    entry.attr('data-type'),
+                                                    target_capability);
+                                        }).append(
+                       target_capability.split('/').pop()
+              )))});
+              } else {
+                select.children('[class=dropdown-toggle]').css('cursor', 'not-allowed');
+                select.children('[class=dropdown-toggle]').css('text-decoration', 'none');
+                select.children('[class=dropdown-toggle]').attr('title', 'No transitions available for ' + new_capability);
+            }
+         }
         });
       }, timeout)
     })
@@ -152,24 +182,8 @@
         <td>
           {{ o.type }}
         </td>
-        <td>
-          <a data-toggle="collapse" href="#{{ o.name|slugify }}"
-             aria-expanded="false" aria-controls="{{ o.name|slugify }}">
-            {{ o.capabilities_name }}
-          </a>
-          <div class="collapse" id="{{ o.name|slugify }}">
-            <div>
-		          <p>Associated at: {{ o.capabilities_association_time }}</p>
-		          <p>Data lifetime: {{ o.capabilities_storage_lifetime }}</p>
-		          <p>QoS lifetime: {{ o.capabilities_lifetime }}</p>
-		          <p>{{ o.capabilities_lifetime_action }}</p>
-		          <hr/>
-              <p>Latency: {{ o.capabilities_latency }}</p>
-		          <p>Throughput: {{ o.capabilities_throughput }}</p>
-              <p>Redundancy: {{ o.capabilities_redundancy }}</p>
-              <p>Geolocation: {{ o.capabilities_geolocation }}</p>
-            </div>
-          </div>
+        <td id="qos-{{ o.name|slugify }}">
+          {{ o.capabilities_name }}
         </td>
         <td style="width: 200px">
           <img id="progress-{{ o.name|slugify }}"
@@ -198,11 +212,11 @@
               Select<span class="caret"></span>
             </a>
             <ul class="dropdown-menu">
-	            {% for allowed in o.capabilities_allowed %}
+              {% for allowed in o.capabilities_allowed %}
               <li>
                 <button class="btn btn-link"
                         onclick="changeqos('{{ path }}/{{ o.name }}', '{{ o.type }}', '{{ allowed }}')">
-                  {{ allowed|cut:"/cdmi_capabilities/" }}
+                  {{ allowed|basename }}
                 </button>
               </li>
               {% endfor %}
@@ -338,7 +352,7 @@
         <form action="url 'cdmi:update' site.id object_info.path" method="post" id="changeqos-form">
           {% csrf_token %}
           <input type="hidden" name="qos"></input>
-	        <input type="hidden" name="type"></input>
+          <input type="hidden" name="type"></input>
           <input type="hidden" name="next" value="{% url 'cdmi:browse' site.id path %}"></input>
           <button type="button" class="btn btn-danger" data-dismiss="modal">Cancle</button>
           <button type="submit" class="btn btn-success">Change</button>
