@@ -30,8 +30,14 @@
   $.fn.poll = function(timeout) {
     return this.each(function() {
       var entry = $(this);
+
+      $("#select-" + entry.attr('data-id')).css('display', 'none');
+      $("#progress-" + entry.attr('data-id')).css('display', 'block');
+      $("#target-" + entry.attr('data-id')).css('display', 'block');
+
       setTimeout(function() {
         var url = "{% url 'cdmi:object_info' site.id path %}/" + entry.attr('data-name');
+
         $.get(url, function(data) {
           if ('cdmi_recommended_polling_interval' in data.metadata) {
             var next_timeout = data.metadata.cdmi_recommended_polling_interval;
@@ -168,25 +174,18 @@
         <td style="width: 200px">
           <img id="progress-{{ o.name|slugify }}"
                src="{% static 'cdmi/img/progress.gif' %}"
-               {% if not o.capabilities_target %}
                style="display: none"
-               {% endif %}
                alt="loading" width="150">
         </td>
         <td id="entry-{{ o.name|slugify }}"
             data-name="{{ o.name }}"
             data-id="{{ o.name|slugify }}">
-          <em id="target-{{ o.name|slugify }}"
-              {% if not o.capabilities_target %}
-              style="display: none"
-              {% endif %}>
+          <div id="target-{{ o.name|slugify }}"
+              style="display: none">
             {{ o.capabilities_target|basename }}
-          </em>
+          </div>
           <div id="select-{{ o.name|slugify }}"
-               class="dropdown"
-               {% if o.capabilities_target %}
-               style="display: none"
-               {% endif %}>
+               class="dropdown">
             <!-- <li class="dropdown"> -->
             <a href="#" class="dropdown-toggle
                                {% if not o.capabilities_allowed %}disabled{% endif %}"
