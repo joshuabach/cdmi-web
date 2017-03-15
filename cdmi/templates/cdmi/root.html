@@ -21,20 +21,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'cdmi/css/custom.css' %}" />
 
     <script>
-    $(document).ready(function() {
-        var $loading = $('#loadingDiv').hide();
-        $(document)
-            .ajaxStart(function () {
-                $loading.show();
-            })
-            .ajaxStop(function () {
-                $loading.hide();
-            });
-
-        {% if object_info %}
-        $('#changeqos').modal('show');
-        {% endif %}
-    });
+      {% include 'cdmi/root.js' %}
     </script>
 
     {% block head %}
