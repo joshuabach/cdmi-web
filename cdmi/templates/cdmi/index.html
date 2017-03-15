@@ -26,6 +26,7 @@
            id="qos">
       <thead>
         <tr>
+          <th data-defaultsort="disabled"></th>
           <th data-defaultsort="asc">Name</th>
           <th>Access Latency</th>
           <th>Number of Copies</th>
@@ -38,6 +39,7 @@
         {% for qos in qualities_of_service %}
         <tr style="cursor: pointer;" data-toggle="collapse"
             data-target="#details-{{ qos.url|slugify }}">
+          <td><img src="{{ qos.site.logo_uri }}" height="20"></td>
           <td>{{ qos.name }}</td>
           <td>{{ qos.latency }}</td>
           <td>{{ qos.copies }}</td>
@@ -46,12 +48,12 @@
             {% for type in qos.storage_types %}
             <img title="{{ type|capfirst }}"
                  src="{% get_static_prefix %}cdmi/img/{{ type }}.png"
-                 width="20">
+                 height="20">
             <small>{{ type|capfirst }}</small>{% if not forloop.last %}, {% endif %}
             {% empty %}
             <img title="Other"
                  src="{% static 'cdmi/img/other.png' %}"
-                 width="20">
+                 height="20">
             {% endfor %}
           </td>
           <td>{{ qos.transitions|join:", " }}</td>
