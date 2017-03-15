@@ -26,6 +26,28 @@
       $('#changeqos').modal('show');
     });
   };
+
+  $.fn.poll = function(timeout) {
+    return this.each(function() {
+      var entry = $(this);
+      setTimeout(function() {
+        var url = "{% url 'cdmi:object_info' site.id path %}/" + entry.attr('data-name');
+        $.get(url, function(data) {
+          if ('cdmi_recommended_polling_interval' in data.metadata) {
+            var next_timeout = data.metadata.cdmi_recommended_polling_interval;
+            console.log("Polled %o, still in transition. Sleeping %o", url, next_timeout) ;
+            entry.poll(next_timeout);
+          } else {
+            console.log("Polled %o, transition finished", url) ;
+            $("#progress-" + entry.attr('data-id')).css('display', 'none');
+            $("#target-" + entry.attr('data-id')).css('display', 'none');
+            $("#select-" + entry.attr('data-id')).css('display', 'block');
+          }
+        });
+      }, timeout)
+    })
+  };
+
 </script>
 {% endblock %}
 
@@ -144,15 +166,27 @@
           </div>
         </td>
         <td style="width: 200px">
-          {% if o.capabilities_target %}
-          <img src="{% static 'cdmi/img/progress.gif' %}" alt="loading" width="150">
-          {% endif %}
+          <img id="progress-{{ o.name|slugify }}"
+               src="{% static 'cdmi/img/progress.gif' %}"
+               {% if not o.capabilities_target %}
+               style="display: none"
+               {% endif %}
+               alt="loading" width="150">
         </td>
-        <td>
-          {% if o.capabilities_target %}
-          <em>{{ o.capabilities_target|basename }}</em>
-          {% else %}
-          <div class="dropdown">
+        <td id="entry-{{ o.name|slugify }}"
+            data-name="{{ o.name }}"
+            data-id="{{ o.name|slugify }}">
+          <em id="target-{{ o.name|slugify }}"
+              {% if not o.capabilities_target %}
+              style="display: none"
+              {% endif %}>
+            {{ o.capabilities_target|basename }}
+          </em>
+          <div id="select-{{ o.name|slugify }}"
+               class="dropdown"
+               {% if o.capabilities_target %}
+               style="display: none"
+               {% endif %}>
             <!-- <li class="dropdown"> -->
             <a href="#" class="dropdown-toggle
                                {% if not o.capabilities_allowed %}disabled{% endif %}"
@@ -177,7 +211,6 @@
             <!-- </li> -->
           </div>
         </td>
-        {% endif %}
         <td>
           <form action="{% url 'cdmi:delete' site.id path %}" method="post">
             {% csrf_token %}
@@ -191,11 +224,11 @@
           </form>
         </td>
       </tr>
-      {% if o.capabilities_polling %}
       <script>
-        setTimeout(function() { window.location.reload(1); }, {{ o.capabilities_polling }});
+        {% if o.capabilities_polling %}
+        $("#entry-{{ o.name|slugify }}").poll({{ o.capabilities_polling }});
+        {% endif %}
       </script>
-      {% endif %}
       {% endfor %}
     </tbody>
   </table>
