@@ -116,6 +116,12 @@ def mkdir(request, site, path):
         return redirect('cdmi:browse', site.id, path)
 
 
+def browse_default(request, path):
+    site = Site.objects.filter(site_uri__contains='localhost')[0]
+
+    return redirect('cdmi:browse', site.id, path)
+
+
 @user_passes_test(has_access_token)
 def browse(request, site, path):
     site = Site.objects.get(id=site)
