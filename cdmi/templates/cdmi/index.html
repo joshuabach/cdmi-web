@@ -75,27 +75,7 @@
               <td>Exported via</td>
               <td>
                 {% if qos.site.root_container.exports %}
-                <table class="table">
-                  <tbody>
-                    {% for name, details in qos.site.root_container.exports.items %}
-                    <tr>
-                      <td>{{ name }}</td>
-                      <td>
-                        <table class="table">
-                          <tbody>
-                            {% for key, value in details.items %}
-                            <tr>
-                              <td>{{ key }}</td>
-                              <td>{{ value }}</td>
-                            </tr>
-                            {% endfor %}
-                          </tbody>
-                        </table>
-                      </td>
-                    <tr>
-                      {% endfor %}
-                  </tbody>
-                </table>
+                {% include 'cdmi/dict.html' with object=qos.site.root_container.exports %}
                 {% else %}
                 <em>Unavailable for this CDMI server</em>
                 {% endif %}
