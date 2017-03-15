@@ -33,7 +33,7 @@ def handle_update_object(request, site, path):
 
     response = cdmi.put_capabilities_class(
         site, path, request.session['access_token'],
-        'is_dir' in request.POST and request.POST['is_dir'] == 'True',
+        request.POST['type'] == 'Directory',
         capabilities)
 
     logger.debug(response)
@@ -55,7 +55,7 @@ def update(request, site, path):
     site = Site.objects.get(id=site)
 
     if request.method == 'POST':
-        if 'qos' in request.POST:
+        if 'qos' in request.POST and 'type' in request.POST:
             logger.debug("Change {} to {}".format(
                 path, request.POST['qos']))
             handle_update_object(request, site, path)
@@ -141,22 +141,6 @@ def browse(request, site, path):
     username = request.user.username
 
     context = dict()
-
-    object_info = None
-    if 'info' in request.GET and 'name' in request.GET:
-        url = urljoin(site.site_uri, request.GET['info'])
-        object_info = cdmi.get_capabilities_class(
-            url, request.session['access_token'])
-        object_info['url'] = url
-        object_info['path'] = os.path.join(path, request.GET['name'])
-        abs_path = os.path.join(site.storage.location, path,
-                                request.GET['name'])
-        object_info['is_dir'] = request.GET['type'] == 'Directory'
-
-        logger.debug("Is dir? {} {}".format(
-            abs_path, os.path.isdir(abs_path)))
-
-        context['next_url'] = request.GET['nextbutone']
 
     logger.debug("current path {}".format(path))
 
