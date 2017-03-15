@@ -21,36 +21,6 @@
 {% block body %}
 <div class="container">
   <div class="container">
-    <h1>Available CDMI Endpoints</h1>
-    <table class="table sortable table-hover">
-      <thead>
-        <tr>
-          <th data-defaultsort="disabled"></th>
-          <th data-defaultsort="asc">Name</th>
-          <th>URL</th>
-          <th>Authentication</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for site in sites %}
-        <tr class="clickable" data-href="{% url 'cdmi:browse' site.id '' %}">
-          <td><img src="{{ site.logo_uri }}" width="50"></td>
-          <td>{{ site.site_name }}</td>
-          <td><a href="{{ site.site_uri }}">{{ site.site_uri }}</a></td>
-          <td>
-            {% if site.auth == 'bearer' %}
-            <strong>HTTP Bearer authentication</strong> with your access token
-            {% elif site.auth == 'basic' %}
-            <strong>HTTP Basic authentication</strong> with <em>restadmin:restadmin</em>
-            {% endif %}
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-
-  <div class="container">
     <h1>Available Qualities of Storage</h1>
     <table class="table table-hover sortable"
            id="qos">
