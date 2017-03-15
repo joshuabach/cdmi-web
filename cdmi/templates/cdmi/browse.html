@@ -8,24 +8,39 @@
       $('#changeqos').modal('show');
   };
 
-  function changeqos(file_path, type, target_capability) {
-    $.get("{% url 'cdmi:object_info' site.id '' %}" + target_capability, function(data) {
-      var target_capability_metadata = data.metadata;
+  $.fn.changeqos = function(target_capability) {
+    return this.each(function() {
+      var entry = $(this);
+      var target = $("#target-" + entry.attr('data-id'));
 
-      $('#changeqos-file-name')[0].innerHTML = file_path;
-      $('#changeqos-object-name')[0].innerHTML = target_capability.split('/').pop();
-      $('#changeqos-object-latency')[0].innerHTML = target_capability_metadata.cdmi_latency;
-      $('#changeqos-object-copies')[0].innerHTML = target_capability_metadata.cdmi_data_redundancy;
-      $('#changeqos-object-location')[0].innerHTML = target_capability_metadata.cdmi_geographic_placement;
-      $('#changeqos-object-transitions')[0].innerHTML = target_capability_metadata.cdmi_capabilities_allowed;
+      var file_path = "{{ path }}/" + entry.attr('data-name');
+      var type = entry.attr('data-type');
 
-      $('#changeqos-form').attr('action', "{% url 'cdmi:update' site.id '' %}" + file_path)
-      $('#changeqos-form').children('input[name=qos]').attr('value', target_capability)
-      $('#changeqos-form').children('input[name=type]').attr('value', type)
+      $.get("{% url 'cdmi:object_info' site.id '' %}" + target_capability, function(data) {
+        var target_capability_metadata = data.metadata;
 
-      $('#changeqos').modal('show');
-    });
-  };
+        $('#changeqos-file-name')[0].innerHTML = file_path;
+        $('#changeqos-object-name')[0].innerHTML = target_capability.split('/').pop();
+        $('#changeqos-object-latency')[0].innerHTML = target_capability_metadata.cdmi_latency;
+        $('#changeqos-object-copies')[0].innerHTML = target_capability_metadata.cdmi_data_redundancy;
+        $('#changeqos-object-location')[0].innerHTML = target_capability_metadata.cdmi_geographic_placement;
+        $('#changeqos-object-transitions')[0].innerHTML = target_capability_metadata.cdmi_capabilities_allowed;
+
+        $('#changeqos-button').off()
+        $('#changeqos-button').click(function() {
+          $.post("{% url 'cdmi:update' site.id '' %}" + file_path,
+                 {qos: target_capability, type: type},
+                 function(data) {
+             target[0].innerHTML = target_capability.split('/').pop();
+             entry.poll();
+          })
+        })
+
+        $('#changeqos').modal('show');
+      });
+    }
+  )};
+
 
   $.fn.poll = function(timeout) {
     return this.each(function() {
@@ -67,9 +82,7 @@
                   $('<li>').append(
                     $('<button>').attr('class', 'btn btn-link')
                                  .click(function() {
-                                          changeqos("{{ path }}/"+entry.attr('data-name'),
-                                                    entry.attr('data-type'),
-                                                    target_capability);
+                                          entry.changeqos(target_capability);
                                         }).append(
                        target_capability.split('/').pop()
               )))});
@@ -193,6 +206,7 @@
         </td>
         <td id="entry-{{ o.name|slugify }}"
             data-name="{{ o.name }}"
+            data-type="{{ o.type }}"
             data-id="{{ o.name|slugify }}">
           <div id="target-{{ o.name|slugify }}"
               style="display: none">
@@ -215,7 +229,7 @@
               {% for allowed in o.capabilities_allowed %}
               <li>
                 <button class="btn btn-link"
-                        onclick="changeqos('{{ path }}/{{ o.name }}', '{{ o.type }}', '{{ allowed }}')">
+                        onclick="$('#entry-{{ o.name|slugify }}').changeqos('{{ allowed }}')">
                   {{ allowed|basename }}
                 </button>
               </li>
@@ -349,14 +363,17 @@
         </table>
       </div>
       <div class="modal-footer">
+        <button class="btn btn-danger" data-dismiss="modal">Cancle</button>
+        <button id="changeqos-button" data-dismiss="modal" class="btn btn-success">Change</button>
+        {% comment %}
         <form action="url 'cdmi:update' site.id object_info.path" method="post" id="changeqos-form">
-          {% csrf_token %}
           <input type="hidden" name="qos"></input>
           <input type="hidden" name="type"></input>
           <input type="hidden" name="next" value="{% url 'cdmi:browse' site.id path %}"></input>
           <button type="button" class="btn btn-danger" data-dismiss="modal">Cancle</button>
           <button type="submit" class="btn btn-success">Change</button>
         </form>
+        {% endcomment %}
       </div>
     </div>
   </div>

@@ -5,6 +5,7 @@ from requests.compat import urljoin, urlsplit
 
 from django.shortcuts import render, redirect
 from django.views import generic
+from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib import messages
@@ -38,6 +39,8 @@ def handle_update_object(request, site, path):
 
     logger.debug(response)
 
+    return response
+
 
 @user_passes_test(has_access_token)
 def object_info(request, site, path):
@@ -50,6 +53,7 @@ def object_info(request, site, path):
     return JsonResponse(object_info)
 
 
+@csrf_exempt
 @user_passes_test(has_access_token)
 def update(request, site, path):
     site = Site.objects.get(id=site)
@@ -58,14 +62,16 @@ def update(request, site, path):
         if 'qos' in request.POST and 'type' in request.POST:
             logger.debug("Change {} to {}".format(
                 path, request.POST['qos']))
-            handle_update_object(request, site, path)
-            messages.success(request, '{} updated'.format(
-                path))
-
-    if request.method == 'POST' and 'next' in request.POST:
-        return redirect(request.POST['next'])
+            response = handle_update_object(request, site, path)
+            return JsonResponse({
+                'message': 'Success',
+                'response': response
+            }, status=200)
+        else:
+            return JsonResponse({'missing_parameters': ['qos', 'type']},
+                                status=400)
     else:
-        return redirect('cdmi:browse', site.id, path)
+        return JsonResponse({'message': 'Use POST'}, status=405)
 
 
 @user_passes_test(has_access_token)
