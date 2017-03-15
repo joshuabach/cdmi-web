@@ -12,4 +12,5 @@ urlpatterns = [
     url(r'^mkdir/(?P<site>[0-9]+)/(?P<path>.*)$', views.mkdir, name='mkdir'),
     url(r'^update/(?P<site>[0-9]+)/(?P<path>.*)$', views.update, name='update'),
     url(r'^delete/(?P<site>[0-9]+)/(?P<path>.*)$', views.delete, name='delete'),
+    url(r'^info/(?P<site>[0-9]+)/(?P<path>.*)$', views.object_info, name='object_info'),
 ]

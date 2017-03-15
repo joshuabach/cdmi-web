@@ -5,6 +5,7 @@ from requests.compat import urljoin, urlsplit
 
 from django.shortcuts import render, redirect
 from django.views import generic
+from django.http import JsonResponse
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
@@ -36,6 +37,17 @@ def handle_update_object(request, site, path):
         capabilities)
 
     logger.debug(response)
+
+
+@user_passes_test(has_access_token)
+def object_info(request, site, path):
+    # Basically, this is a CDMI proxy for the jQuery
+    site = Site.objects.get(id=site)
+
+    object_info = cdmi.get_status(
+        site, path, request.session['access_token'])
+
+    return JsonResponse(object_info)
 
 
 @user_passes_test(has_access_token)
