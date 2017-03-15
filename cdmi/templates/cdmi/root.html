@@ -20,6 +20,23 @@
     <!-- Custom -->
     <link rel="stylesheet" type="text/css" href="{% static 'cdmi/css/custom.css' %}" />
 
+    <script>
+    $(document).ready(function() {
+        var $loading = $('#loadingDiv').hide();
+        $(document)
+            .ajaxStart(function () {
+                $loading.show();
+            })
+            .ajaxStop(function () {
+                $loading.hide();
+            });
+
+        {% if object_info %}
+        $('#changeqos').modal('show');
+        {% endif %}
+    });
+    </script>
+
     {% block head %}
     {% endblock %}
   </head>
@@ -27,6 +44,9 @@
     <nav class="navbar navbar-default">
       <div class="container-fluid">
         <div class="navbar-header">
+          <div id="loadingDiv" class="navbar-brand">
+            <img src="{% static 'cdmi/img/loader.gif' %}" alt="loading" height="25px">
+          </div>
           <a class="navbar-brand" href="/">CDMI Web</a>
         </div>
         <p class="navbar-text">Logged in as: {{ username }}</p>
