@@ -34,7 +34,11 @@
           <td>{{ qos.name }}</td>
           <td>{{ qos.latency }}</td>
           <td>{{ qos.copies }}</td>
-          <td>{{ qos.metadata.cdmi_data_storage_lifetime|isoduration }}</td>
+          <td>
+            {% if  qos.metadata.cdmi_data_storage_lifetime %}
+            {{ qos.metadata.cdmi_data_storage_lifetime|isoduration }}
+            {% endif %}
+          </td>
           <td>{{ qos.location.0 }}</td>
           <td data-value="{{ qos.storage_types|slugify }}">
             {% for type in qos.storage_types %}

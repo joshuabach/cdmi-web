@@ -26,7 +26,8 @@ $.fn.changeqos = function(target_capability) {
                 $.post("{% url 'cdmi:update' site.id '' %}" + file_path,
                        {qos: target_capability, type: type},
                        function(data) {
-                           target.text(target_capability.split('/').pop())
+                           target.makeqosentry(target_capability,
+                                               target_capability_metadata);
                            entry.poll();
                        })
             });
@@ -66,7 +67,8 @@ $.fn.poll = function(timeout) {
                     select.css('display', 'block');
 
                     var new_capability = data.capabilitiesURI.split('/').pop();
-                    qos.text(new_capability)
+                    qos.empty();
+                    qos.append(target.contents());
 
                     // now we have to update the possible target capabilities
                     var capabilities_allowed = data.metadata.cdmi_capabilities_allowed_provided;
@@ -93,3 +95,52 @@ $.fn.poll = function(timeout) {
         }, timeout)
     })
 };
+
+var qosid = 0;
+$.fn.makeqosentry = function(capabilities_uri, metadata) {
+    return this.each(function() {
+        var id = qosid++
+        $(this).empty();
+        $(this).append($('<a>')
+                       .css('cursor', 'pointer')
+                       .attr('data-toggle', 'collapse')
+                       .attr('data-target', '#' + id)
+                       .attr('aria-expanded', 'false')
+                       .attr('aria-controls', '#' + id)
+                       .append(capabilities_uri.split('/').pop()))
+            .append($('<div>')
+                    .attr('class', 'collapse')
+                    .attr('id', id)
+                    .append(
+                        $('<table>').attr('class', 'table table-bordered')
+                            .css('width', 'auto')
+                            .append($('<tbody>')
+                                    .append(function() {
+                                        if ('cdmi_data_storage_lifetime' in metadata) {
+                                            return $('<tr>')
+                                                .append($('<td>').text('Data lifetime'))
+                                                .append($('<td>').text(moment.duration(
+                                                    metadata.cdmi_data_storage_lifetime).humanize()))
+                                        }
+                                    })
+                                    .append($('<tr>')
+                                            .append($('<td>').text('QoS lifetime'))
+                                            .append($('<td>').text(moment.duration(
+                                                metadata.cdmi_capability_lifetime).humanize())))
+                                    .append($('<tr>')
+                                            .append($('<td>').text('Lifetime action'))
+                                            .append($('<td>').text(metadata.cdmi_capability_lifetime_action)))
+                                    .append($('<tr>')
+                                            .append($('<td>').text('Latency'))
+                                            .append($('<td>').text(metadata.cdmi_latency)))
+                                    .append($('<tr>')
+                                            .append($('<td>').text('Throughput'))
+                                            .append($('<td>').text(metadata.cdmi_throughput)))
+                                    .append($('<tr>')
+                                            .append($('<td>').text('Redundancy'))
+                                            .append($('<td>').text(metadata.cdmi_data_redundancy)))
+                                    .append($('<tr>')
+                                            .append($('<td>').text('Geolocation'))
+                                            .append($('<td>').text(metadata.cdmi_geographic_placement))))))
+    })
+}

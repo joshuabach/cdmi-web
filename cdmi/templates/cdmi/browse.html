@@ -104,7 +104,21 @@
           {{ o.type }}
         </td>
         <td id="qos-{{ o.name|slugify }}">
-          {{ o.capabilities_name }}
+          <script>
+            $("#qos-{{ o.name|slugify }}").makeqosentry(
+                "{{ o.capabilities_name }}",
+                {
+                  {% if capabilities_storage_lifetime %}
+                  cdmi_data_storage_lifetime: "{{ o.capabilities_storage_lifetime }}",
+                  {% endif %}
+                  cdmi_capability_lifetime: "{{ o.capabilities_lifetime }}",
+                  cdmi_capability_lifetime_action: "{{ o.capabilities_lifetime_action }}",
+                  cdmi_latency: "{{ o.capabilities_latency }}",
+                  cdmi_throughput: "{{ o.capabilities_throughput }}",
+                  cdmi_data_redundancy: "{{ o.capabilities_redundancy }}",
+                  cdmi_geographic_placement: {{ o.capabilities_geolocation|safe }},
+                });
+          </script>
         </td>
         <td style="width: 200px">
           <img id="progress-{{ o.name|slugify }}"
