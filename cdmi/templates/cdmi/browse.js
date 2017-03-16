@@ -11,12 +11,16 @@ $.fn.changeqos = function(target_capability) {
         var file_path = "{{ path }}/" + entry.attr('data-name');
         var type = entry.attr('data-type');
 
+        // Retrieve details about the target capability
         $.get("{% url 'cdmi:object_info' site.id '' %}" + target_capability, function(data) {
             var target_capability_metadata = data.metadata;
 
+            // Put the container / dataobject in transition
             $.post("{% url 'cdmi:update' site.id '' %}" + file_path,
                    {qos: target_capability, type: type},
                    function(data) {
+
+                       // Create a menuentry about the target qos in the table
                        target.makeqosentry(target_capability,
                                            target_capability_metadata);
                        entry.poll();
@@ -35,6 +39,7 @@ $.fn.poll = function(timeout) {
         var target = $("#target-" + entry.attr('data-id'));
         var qos = $("#qos-" + entry.attr('data-id'));
 
+        // Ensure that we are currently displaying the loading animation
         select.css('display', 'none');
         progress.css('display', 'block');
         target.css('display', 'block');
@@ -43,23 +48,28 @@ $.fn.poll = function(timeout) {
         setTimeout(function() {
             var url = "{% url 'cdmi:object_info' site.id path %}" + entry.attr('data-name');
 
+            // Check if the container / dataobject is still in transition
             $.get(url, function(data) {
                 if ('cdmi_recommended_polling_interval' in data.metadata) {
                     var next_timeout = data.metadata.cdmi_recommended_polling_interval;
                     console.log("Polled %o, still in transition. Sleeping %o", url, next_timeout) ;
+
                     entry.poll(next_timeout);
                 } else {
-                    console.log("Polled %o, transition finished", url) ;
+                    var new_capability = data.capabilitiesURI.split('/').pop();
+                    console.log("Polled %o, transition to %o finished", url, new_capability);
+
+                    // Switch back to displaying the target capability selection
                     progress.css('display', 'none');
                     target.css('display', 'none');
                     select.css('display', 'block');
 
-                    var new_capability = data.capabilitiesURI.split('/').pop();
+                    // Use the old target qos as the new current qos
                     qos.empty();
                     qos.append(target.contents());
 
-                    // now we have to update the possible target capabilities
                     var capabilities_allowed = data.metadata.cdmi_capabilities_allowed_provided;
+                    // Update the list of allowed transitions in the "select" dropdown menu
                     if (capabilities_allowed.length > 0) {
                         capabilities_allowed.forEach(function(target_capability) {
                             select.children('ul[class=dropdown-menu]').append(
