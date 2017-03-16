@@ -14,25 +14,13 @@ $.fn.changeqos = function(target_capability) {
         $.get("{% url 'cdmi:object_info' site.id '' %}" + target_capability, function(data) {
             var target_capability_metadata = data.metadata;
 
-            $('#changeqos-file-name').text(file_path)
-            $('#changeqos-object-name').text(target_capability.split('/').pop())
-            $('#changeqos-object-latency').text(target_capability_metadata.cdmi_latency)
-            $('#changeqos-object-copies').text(target_capability_metadata.cdmi_data_redundancy)
-            $('#changeqos-object-location').text(target_capability_metadata.cdmi_geographic_placement)
-            $('#changeqos-object-transitions').text(target_capability_metadata.cdmi_capabilities_allowed)
-
-            $('#changeqos-button').off()
-            $('#changeqos-button').click(function() {
-                $.post("{% url 'cdmi:update' site.id '' %}" + file_path,
-                       {qos: target_capability, type: type},
-                       function(data) {
-                           target.makeqosentry(target_capability,
-                                               target_capability_metadata);
-                           entry.poll();
-                       })
-            });
-
-            $('#changeqos').modal('show');
+            $.post("{% url 'cdmi:update' site.id '' %}" + file_path,
+                   {qos: target_capability, type: type},
+                   function(data) {
+                       target.makeqosentry(target_capability,
+                                           target_capability_metadata);
+                       entry.poll();
+                   })
         });
     })
 };
