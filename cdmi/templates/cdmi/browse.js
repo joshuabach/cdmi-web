@@ -24,7 +24,7 @@ $.fn.changeqos = function(target_capability) {
         target.text(target_capability.split('/').pop());
 
         // Retrieve details about the target capability
-        $.get("{% url 'cdmi:object_info' site.id '' %}" + target_capability, function(data) {
+        $.get("{% url 'cdmi:object_info' site.id '' %}/" + target_capability, function(data) {
             var target_capability_metadata = data.metadata;
 
             // Create a menuentry about the target qos in the table
@@ -32,7 +32,7 @@ $.fn.changeqos = function(target_capability) {
                                 target_capability_metadata);
 
             // Put the container / dataobject in transition
-            $.post("{% url 'cdmi:update' site.id '' %}" + file_path,
+            $.post("{% url 'cdmi:update' site.id '' %}/" + file_path,
                    {qos: target_capability, type: type},
                    function() {entry.poll()})
         });
@@ -50,7 +50,7 @@ $.fn.poll = function(timeout) {
         var qos = $("#qos-" + entry.attr('data-id'));
 
         setTimeout(function() {
-            var url = "{% url 'cdmi:object_info' site.id path %}" + entry.attr('data-name');
+            var url = "{% url 'cdmi:object_info' site.id path %}/" + entry.attr('data-name');
 
             // Check if the container / dataobject is still in transition
             $.get(url, function(data) {
