@@ -105,6 +105,7 @@ def get_capabilities_class(url, access_token, classes=None):
                if predicate(capabilities)]
 
         capabilities_class = dict(
+            metadata=capabilities['metadata'],
             name=name, latency=latency, copies=copies, location=location,
             storage_types=qos, transitions=transitions, url=url)
 

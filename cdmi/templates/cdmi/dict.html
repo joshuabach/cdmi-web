@@ -4,7 +4,7 @@
 {% if object|is_list %}
 <ul class="list">
   {% for element in object %}
-  <li>
+  <li class="list-item" style="text-align: left">
     {% include 'cdmi/dict.html' with object=element %}
   </li>
   {% endfor %}
@@ -14,7 +14,7 @@
   <tbody>
     {% for key, value in object.items %}
     <tr>
-      <td>{{ key|capfirst }}</td>
+      <td>{{ key|cut:"cdmi_"|replace:"_, "|capfirst }}</td>
       <td>{% include 'cdmi/dict.html' with object=value %}</td>
     {% endfor %}
   </tbody>

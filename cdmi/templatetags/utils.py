@@ -42,3 +42,10 @@ def is_dict(value):
 @register.filter
 def is_string(value):
     return isinstance(value, str)
+
+
+@register.filter
+@stringfilter
+def replace(value, arg):
+    args = arg.split(",")
+    return value.replace(args[0], args[1])
