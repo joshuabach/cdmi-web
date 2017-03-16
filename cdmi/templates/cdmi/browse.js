@@ -6,25 +6,35 @@
 $.fn.changeqos = function(target_capability) {
     return this.each(function() {
         var entry = $(this);
+
+        var select = $("#select-" + entry.attr('data-id'));
+        var progress = $("#progress-" + entry.attr('data-id'));
         var target = $("#target-" + entry.attr('data-id'));
 
         var file_path = "{{ path }}/" + entry.attr('data-name');
         var type = entry.attr('data-type');
 
+        // Switch to displaying the loading animation
+        select.css('display', 'none');
+        progress.css('display', 'block');
+        target.css('display', 'block');
+        select.children('ul[class=dropdown-menu]').empty();
+
+        // We'll display just the name of the capability until we get the details
+        target.text(target_capability.split('/').pop());
+
         // Retrieve details about the target capability
         $.get("{% url 'cdmi:object_info' site.id '' %}" + target_capability, function(data) {
             var target_capability_metadata = data.metadata;
 
+            // Create a menuentry about the target qos in the table
+            target.makeqosentry(target_capability,
+                                target_capability_metadata);
+
             // Put the container / dataobject in transition
             $.post("{% url 'cdmi:update' site.id '' %}" + file_path,
                    {qos: target_capability, type: type},
-                   function(data) {
-
-                       // Create a menuentry about the target qos in the table
-                       target.makeqosentry(target_capability,
-                                           target_capability_metadata);
-                       entry.poll();
-                   })
+                   function() {entry.poll()})
         });
     })
 };
@@ -38,12 +48,6 @@ $.fn.poll = function(timeout) {
         var progress = $("#progress-" + entry.attr('data-id'));
         var target = $("#target-" + entry.attr('data-id'));
         var qos = $("#qos-" + entry.attr('data-id'));
-
-        // Ensure that we are currently displaying the loading animation
-        select.css('display', 'none');
-        progress.css('display', 'block');
-        target.css('display', 'block');
-        select.children('ul[class=dropdown-menu]').empty();
 
         setTimeout(function() {
             var url = "{% url 'cdmi:object_info' site.id path %}" + entry.attr('data-name');
