@@ -14,19 +14,19 @@ $.fn.changeqos = function(target_capability) {
         $.get("{% url 'cdmi:object_info' site.id '' %}" + target_capability, function(data) {
             var target_capability_metadata = data.metadata;
 
-            $('#changeqos-file-name')[0].innerHTML = file_path;
-            $('#changeqos-object-name')[0].innerHTML = target_capability.split('/').pop();
-            $('#changeqos-object-latency')[0].innerHTML = target_capability_metadata.cdmi_latency;
-            $('#changeqos-object-copies')[0].innerHTML = target_capability_metadata.cdmi_data_redundancy;
-            $('#changeqos-object-location')[0].innerHTML = target_capability_metadata.cdmi_geographic_placement;
-            $('#changeqos-object-transitions')[0].innerHTML = target_capability_metadata.cdmi_capabilities_allowed;
+            $('#changeqos-file-name').text(file_path)
+            $('#changeqos-object-name').text(target_capability.split('/').pop())
+            $('#changeqos-object-latency').text(target_capability_metadata.cdmi_latency)
+            $('#changeqos-object-copies').text(target_capability_metadata.cdmi_data_redundancy)
+            $('#changeqos-object-location').text(target_capability_metadata.cdmi_geographic_placement)
+            $('#changeqos-object-transitions').text(target_capability_metadata.cdmi_capabilities_allowed)
 
             $('#changeqos-button').off()
             $('#changeqos-button').click(function() {
                 $.post("{% url 'cdmi:update' site.id '' %}" + file_path,
                        {qos: target_capability, type: type},
                        function(data) {
-                           target[0].innerHTML = target_capability.split('/').pop();
+                           target.text(target_capability.split('/').pop())
                            entry.poll();
                        })
             });
@@ -66,7 +66,7 @@ $.fn.poll = function(timeout) {
                     select.css('display', 'block');
 
                     var new_capability = data.capabilitiesURI.split('/').pop();
-                    qos[0].innerHTML = new_capability;
+                    qos.text(new_capability)
 
                     // now we have to update the possible target capabilities
                     var capabilities_allowed = data.metadata.cdmi_capabilities_allowed_provided;
