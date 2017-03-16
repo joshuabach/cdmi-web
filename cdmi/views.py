@@ -148,7 +148,15 @@ def browse(request, site, path):
 
     context = dict()
 
-    logger.debug("current path {}".format(path))
+    if site.can_browse:
+        if not path.startswith(request.user.username):
+            path = os.path.join(request.user.username, path)
+            if path[-1] == '/':
+                path = path[:-1]
+
+        browser.handle_create_directory(site, request.user.username, '')
+
+    logger.debug("Browsing path '{}'".format(path))
 
     object_list = cdmi.list_objects(site, path, request.session['access_token'])
 
