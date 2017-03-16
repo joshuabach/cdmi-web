@@ -1,5 +1,6 @@
 {% extends "cdmi/root.html" %}
 {% load static %}
+{% load utils %}
 
 {% block head %}
 <script>
@@ -19,6 +20,7 @@
           <th data-defaultsort="asc">Name</th>
           <th>Access Latency [ms]</th>
           <th>Number of Copies</th>
+          <th>Storage Lifetime</th>
           <th>Location</th>
           <th>Storage type</th>
           <th>Available Transitions</th>
@@ -32,6 +34,7 @@
           <td>{{ qos.name }}</td>
           <td>{{ qos.latency }}</td>
           <td>{{ qos.copies }}</td>
+          <td>{{ qos.metadata.cdmi_data_storage_lifetime|isoduration }}</td>
           <td>{{ qos.location.0 }}</td>
           <td data-value="{{ qos.storage_types|slugify }}">
             {% for type in qos.storage_types %}
