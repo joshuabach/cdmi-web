@@ -21,6 +21,8 @@
 </table>
 {% elif object|is_string and object|is_url %}
 <a href="{{ object }}">{{ object }}</a>
+{% elif object|isoduration %}
+{{ object|isoduration }}
 {% else %}
 {{ object }}
 {% endif %}
