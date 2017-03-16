@@ -46,6 +46,7 @@ def handle_update_object(request, site, path):
 def object_info(request, site, path):
     # Basically, this is a CDMI proxy for the jQuery
     site = Site.objects.get(id=site)
+    path = path.replace('//', '/')
 
     object_info = cdmi.get_status(
         site, path, request.session['access_token'])
@@ -57,6 +58,7 @@ def object_info(request, site, path):
 @user_passes_test(has_access_token)
 def update(request, site, path):
     site = Site.objects.get(id=site)
+    path = path.replace('//', '/')
 
     if request.method == 'POST':
         if 'qos' in request.POST and 'type' in request.POST:
@@ -77,6 +79,7 @@ def update(request, site, path):
 @user_passes_test(has_access_token)
 def delete(request, site, path):
     site = Site.objects.get(id=site)
+    path = path.replace('//', '/')
 
     if request.method == 'POST':
         if 'name' in request.POST:
@@ -98,6 +101,8 @@ def delete(request, site, path):
 @user_passes_test(has_access_token)
 def upload(request, site, path):
     site = Site.objects.get(id=site)
+    path = path.replace('//', '/')
+
     if request.method == 'POST':
         if 'file' in request.FILES:
             if site.can_browse:
@@ -117,6 +122,7 @@ def upload(request, site, path):
 @user_passes_test(has_access_token)
 def mkdir(request, site, path):
     site = Site.objects.get(id=site)
+    path = path.replace('//', '/')
 
     if request.method == 'POST':
         if 'name' in request.POST:
@@ -143,6 +149,7 @@ def browse_default(request, path):
 @user_passes_test(has_access_token)
 def browse(request, site, path):
     site = Site.objects.get(id=site)
+    path = path.replace('//', '/')
 
     username = request.user.username
 
