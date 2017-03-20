@@ -20,9 +20,6 @@ $.fn.changeqos = function(target_capability) {
         target.css('display', 'block');
         select.children('ul[class=dropdown-menu]').empty();
 
-        // Clear old messages
-        clear_messages();
-
         target.getqosentry(target_capability);
 
         // Put the container / dataobject in transition
