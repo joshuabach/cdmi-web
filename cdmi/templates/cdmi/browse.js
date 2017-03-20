@@ -33,24 +33,22 @@ $.fn.changeqos = function(target_capability) {
             // Create a menuentry about the target qos in the table
             target.makeqosentry(target_capability,
                                 target_capability_metadata);
-
-            // Put the container / dataobject in transition
-            $.post("{% url 'cdmi:update' site.id '' %}/" + file_path,
-                   {qos: target_capability, type: type},
-                   function(data) {
-                       if ('metadata' in data && 'cdmi_recommended_polling_interval' in data.metadata) {
-                           var next_timeout = data.metadata.cdmi_recommended_polling_interval;
-                           message('info', "Put "+file_path+" in transition. Polling in "+next_timeout+"ms");
-
-                           entry.poll(next_timeout);
-                       } else {
-                           message('info', "Put "+file_path+" in transition");
-
-                           entry.poll()
-                       }
-                   })
         });
-    })
+
+        // Put the container / dataobject in transition
+        $.post("{% url 'cdmi:update' site.id '' %}/" + file_path, {qos: target_capability, type: type}, function(data) {
+            if ('metadata' in data && 'cdmi_recommended_polling_interval' in data.metadata) {
+                var next_timeout = data.metadata.cdmi_recommended_polling_interval;
+                message('info', "Put "+file_path+" in transition. Polling in "+next_timeout+"ms");
+
+                entry.poll(next_timeout);
+            } else {
+                message('info', "Put "+file_path+" in transition");
+
+                entry.poll()
+            }
+        });
+    });
 };
 
 
