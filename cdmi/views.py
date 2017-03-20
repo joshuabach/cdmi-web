@@ -65,10 +65,7 @@ def update(request, site, path):
             logger.debug("Change {} to {}".format(
                 path, request.POST['qos']))
             response = handle_update_object(request, site, path)
-            return JsonResponse({
-                'message': 'Success',
-                'response': response
-            }, status=200)
+            return JsonResponse(response, status=200)
         else:
             return JsonResponse({'missing_parameters': ['qos', 'type']},
                                 status=400)
@@ -81,16 +78,14 @@ def delete(request, site, path):
     site = Site.objects.get(id=site)
     path = path.replace('//', '/')
 
-    if request.method == 'POST':
-        if 'name' in request.POST:
-            if site.can_browse:
-                browser.handle_delete_object(
-                    site,
-                    request.POST['name'],
-                    path)
+    if request.method == 'POST' and 'name' in request.POST and site.can_browse:
+        browser.handle_delete_object(
+            site,
+            request.POST['name'],
+            path)
 
-                messages.success(request, '{} deleted'.format(
-                    request.POST['name']))
+        messages.success(request, '{} deleted'.format(
+            request.POST['name']))
 
     if request.method == 'POST' and 'next' in request.POST:
         return redirect(request.POST['next'])
@@ -103,15 +98,13 @@ def upload(request, site, path):
     site = Site.objects.get(id=site)
     path = path.replace('//', '/')
 
-    if request.method == 'POST':
-        if 'file' in request.FILES:
-            if site.can_browse:
-                browser.handle_uploaded_file(
-                    site,
-                    request.FILES['file'],
-                    path)
-                messages.success(request, '{} uploaded'.format(
-                    request.FILES['file'].name))
+    if request.method == 'POST' and 'file' in request.FILES and site.can_browse:
+        browser.handle_uploaded_file(
+            site,
+            request.FILES['file'],
+            path)
+        messages.success(request, '{} uploaded'.format(
+            request.FILES['file'].name))
 
     if request.method == 'POST' and 'next' in request.POST:
         return redirect(request.POST['next'])
@@ -124,15 +117,13 @@ def mkdir(request, site, path):
     site = Site.objects.get(id=site)
     path = path.replace('//', '/')
 
-    if request.method == 'POST':
-        if 'name' in request.POST:
-            if site.can_browse:
-                browser.handle_create_directory(
-                    site,
-                    request.POST['name'],
-                    path)
-                messages.success(request, '{}/{} created'.format(
-                    path, request.POST['name']))
+    if request.method == 'POST' and 'name' in request.POST and site.can_browse:
+        browser.handle_create_directory(
+            site,
+            request.POST['name'],
+            path)
+        messages.success(request, '{}/{} created'.format(
+            path, request.POST['name']))
 
     if request.method == 'POST' and 'next' in request.POST:
         return redirect(request.POST['next'])
@@ -163,14 +154,26 @@ def browse(request, site, path):
 
     logger.debug("Browsing path '{}'".format(path))
 
-    object_list = cdmi.list_objects(site, path, request.session['access_token'])
+    try:
+        object_list = cdmi.list_objects(site, path, request.session['access_token'])
+    except ConnectionError:
+        logger.warning('Could not connect to CDMI host {}'.format(site.site_uri))
+        error = 'Could not connect to {}'.format(site.site_uri)
+        object_list = None
+    except cdmi.CdmiError as e:
+        logger.warning('KeyError when handling response from {}'.format(site))
+        error = e.dict
+        object_list = None
+    else:
+        error = None
 
     context.update({
             'object_list': object_list,
             'username': username,
             'path': path,
             'site': site,
-            'object_info': object_info
+            'object_info': object_info,
+            'error': error
         })
 
     return render(request, 'cdmi/browse.html', context)
@@ -191,20 +194,24 @@ class IndexView(UserPassesTestMixin, generic.ListView):
         context = super(IndexView, self).get_context_data(**kwargs)
         context['username'] = self.request.user.username
         context['sites'] = Site.objects.all()
-        for site in context['sites']:
-            site.root_container = cdmi.get_status(
-                site, '/',
-                self.request.session['access_token'])
 
         context['qualities_of_service'] = []
         for site in context['sites']:
-            qoses = cdmi.get_all_capabilities(
-                site.site_uri,
-                self.request.session['access_token'])
+            try:
+                site.root_container = cdmi.get_status(
+                    site, '/',
+                    self.request.session['access_token'])
 
-            for qos in qoses:
-                qos['site'] = site
+                qoses = cdmi.get_all_capabilities(
+                    site.site_uri,
+                    self.request.session['access_token'])
+            except cdmi.CdmiError as e:
+                messages.error(self.request,
+                               '{}: {}'.format(site.site_uri, e.dict['msg']))
+            else:
+                for qos in qoses:
+                    qos['site'] = site
 
-            context['qualities_of_service'] += qoses
+                context['qualities_of_service'] += qoses
 
         return context

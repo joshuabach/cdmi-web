@@ -14,6 +14,19 @@ from .models import Site
 logger = logging.getLogger(__name__)
 
 
+class CdmiError(Exception):
+    def __init__(self, *args, **kwargs):
+        self.dict = kwargs
+        super().__init__(kwargs['msg'])
+
+
+def _json_resp(response):
+    try:
+        return response.json()
+    except JSONDecodeError:
+        return {'error': 'Could not decode', 'response': response.text}
+
+
 def _auth_method(url):
     # TODO It's a bit hacky to reverse engineere the Site from the url
     urlcomponents = urlsplit(url)
@@ -39,15 +52,15 @@ def _update_qos_cdmi(url, access_token, is_dir, body):
     request_kwargs['json'] = body
 
     json_response = dict()
+
     try:
         r = requests.put(url, **request_kwargs)
-        json_response = r.json()
-        logger.debug("PUT {} -> {} {}".format(
-            url, r.status_code, json_response))
-    except (ConnectionError):
-        logger.warning('Could not connect to CDMI host {}'.format(url))
-    except (JSONDecodeError):
-        logger.warning('Error decoding JSON from CDMI host {}'.format(url))
+    except ConnectionError as e:
+        raise CdmiError(msg='Could not connect', url=url)
+
+    json_response = _json_resp(r)
+    logger.debug("PUT {} -> {} {}".format(
+        url, r.status_code, json_response))
 
     return json_response
 
@@ -58,13 +71,12 @@ def _query_cdmi(url, access_token):
     json_response = dict()
     try:
         r = requests.get(url, **request_kwargs)
-        json_response = r.json()
-        logger.debug('GET {} -> {} {}'.format(
-            url, r.status_code, json_response))
-    except (ConnectionError):
-        logger.warning('Could not connect to CDMI host {}'.format(url))
-    except (JSONDecodeError):
-        logger.warning('Error decoding JSON from CDMI host {}'.format(url))
+    except ConnectionError as e:
+        raise CdmiError(msg='Could not connect', url=url)
+
+    json_response = _json_resp(r)
+    logger.debug('GET {} -> {} {}'.format(
+        url, r.status_code, json_response))
 
     return json_response
 
@@ -91,6 +103,9 @@ def get_status(site, path, access_token):
 def get_capabilities_class(url, access_token, classes=None):
     capabilities = _query_cdmi(url, access_token)
 
+    if 'error' in capabilities:
+        return capabilities
+
     capabilities_class = dict()
     try:
         name = capabilities['objectName']
@@ -110,9 +125,9 @@ def get_capabilities_class(url, access_token, classes=None):
             storage_types=qos, transitions=transitions, url=url)
 
         logger.debug('QoS for {}: {}'.format(name, qos))
-
-    except (KeyError):
-        logger.warning('Wrong or missing CDMI capabilities at {}'.format(url))
+    except KeyError as e:
+        raise CdmiError(msg="Missing key in JSON response", url=url,
+                        key=e.args[0], capabilities=capabilities) from e
 
     return capabilities_class
 
@@ -131,8 +146,9 @@ def get_all_capabilities(url, access_token):
                 child_url, access_token)
 
             all_capabilities.append(capabilities_class)
-    except (KeyError):
-        logger.warning('Key error for {}'.format(url))
+    except KeyError as e:
+        raise CdmiError(msg="Missing childrens array", url=url,
+                        capabilities=capabilities) from e
 
     return all_capabilities
 
@@ -148,10 +164,9 @@ class FileObject(object):
         try:
             type = status['objectType']
             cap = status['capabilitiesURI']
-        except KeyError:
-            logger.warning('Key error for {}'.format(name))
-            type = None
-            cap = None
+        except KeyError as e:
+            raise CdmiError(msg='Missing key in object status', object=name,
+                            key=e.args[0], status=status) from e
 
         if cap == '/cdmi_capabilities/container' \
            or cap == '/cdmi_capabilities/dataobject':

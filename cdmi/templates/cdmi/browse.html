@@ -57,6 +57,9 @@
 </div>
 
 <div class="container">
+  {% if error %}
+  {% include 'cdmi/dict.html' with object=error %}
+  {% else %}
   <table class="table sortable" style="font-size:14px">
     <thead><tr>
         <th data-defaultsort="asc">Name</th>
@@ -205,9 +208,8 @@
         <form action="{% url 'cdmi:upload' site.id path %}" method="post" enctype="multipart/form-data">
           {% csrf_token %}
           <div class="form-group">
-            <input type="file" id="file" name="file">
+            <input type="file" id="file" name="file" required>
             <p class="help-block">Search for files to upload.</p>
-            {#<input type="hidden" name="path" value="{{ path }}" />#}
             <input type="hidden" name="next" value="{{ request.get_full_path }}" />
           </div>
           <div class="modal-footer">
@@ -231,9 +233,8 @@
         <form action="{% url 'cdmi:mkdir' site.id path %}" method="post">
           {% csrf_token %}
           <div class="form-group">
-            <input type="text" id="name" name="name">
+            <input type="text" id="name" name="name" required>
             <p class="help-block">Name of directory</p>
-            {#<input type="hidden" name="path" value="{{ path }}" />#}
             <input type="hidden" name="next" value="{{ request.get_full_path }}" />
           </div>
           <div class="modal-footer">
