@@ -134,7 +134,7 @@ def openid_login(request):
 
     if user is not None:
         logger.debug("User {} logged in".format(user.username))
-        next_url = settings.OPENID_LOGIN_REDIRECT if settings.OPENID_LOGIN_REDIRECT else '/'
+        next_url = request.session.get('next', None) or settings.OPENID_LOGIN_REDIRECT or '/'
     else:
         next_url = 'openid:login'
         logger.warning("Could not log in user with subject {} issuer {}".format(sub, iss))
@@ -155,5 +155,7 @@ class LoginView(ListView):
 
         context['state'] = state
         self.request.session['state'] = state
+        if 'next' in self.request.GET:
+            self.request.session['next'] = self.request.GET['next']
 
         return context
