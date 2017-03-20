@@ -174,7 +174,6 @@ def browse(request, site, path):
             'username': username,
             'path': path,
             'site': site,
-            'object_info': object_info,
             'error': error
         })
 
