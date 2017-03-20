@@ -34,7 +34,18 @@ $.fn.changeqos = function(target_capability) {
             // Put the container / dataobject in transition
             $.post("{% url 'cdmi:update' site.id '' %}/" + file_path,
                    {qos: target_capability, type: type},
-                   function() {entry.poll()})
+                   function(data) {
+                       if ('metadata' in data && 'cdmi_recommended_polling_interval' in data.metadata) {
+                           var next_timeout = data.metadata.cdmi_recommended_polling_interval;
+                           console.log("Put %o in transition. Polling in %o", file_path, next_timeout);
+
+                           entry.poll(next_timeout);
+                       } else {
+                           console.log("Put %o in transition. Polling now.", file_path);
+
+                           entry.poll()
+                       }
+                   })
         });
     })
 };
