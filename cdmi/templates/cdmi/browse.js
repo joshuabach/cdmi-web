@@ -90,6 +90,7 @@ $.fn.poll = function(timeout) {
                     } else {
                         select.children('[class=dropdown-toggle]').css('cursor', 'not-allowed');
                         select.children('[class=dropdown-toggle]').css('text-decoration', 'none');
+                        select.children('[class=dropdown-toggle]')[0].classList.add('disabled');
                         select.children('[class=dropdown-toggle]').attr('title', 'No transitions available for ' + new_capability);
                     }
                 }

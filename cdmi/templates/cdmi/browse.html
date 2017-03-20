@@ -137,8 +137,7 @@
           <div id="select-{{ o.name|slugify }}"
                class="dropdown">
             <!-- <li class="dropdown"> -->
-            <a href="#" class="dropdown-toggle
-                               {% if not o.capabilities_allowed %}disabled{% endif %}"
+            <a href="#" class="dropdown-toggle{% if not o.capabilities_allowed %} disabled{% endif %}"
                {% if not o.capabilities_allowed %}
                style="cursor: not-allowed; text-decoration: none"
                title="No transitions available for {{ o.capabilities_name }}"
