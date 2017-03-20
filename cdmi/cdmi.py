@@ -202,6 +202,8 @@ def list_objects(site, path, access_token):
         logger.warning('Key error for {}'.format(url))
         children = []
 
+    capabilities = dict()
+
     object_list = []
     for child in children:
         child_url = urljoin(url+'/', child)
@@ -210,9 +212,13 @@ def list_objects(site, path, access_token):
                 child, _query_cdmi(child_url, access_token))
 
             if obj.capabilities_target:
-                obj.capabilities_target_metadata = _query_cdmi(
-                    urljoin(site.site_uri, obj.capabilities_target),
-                    access_token)['metadata']
+                if obj.capabilities_target not in capabilities:
+                    capabilities[obj.capabilities_target] = _query_cdmi(
+                        urljoin(site.site_uri, obj.capabilities_target),
+                        access_token)['metadata']
+
+                obj.capabilities_target_metadata = capabilities[
+                    obj.capabilities_target]
 
         except ObjectDeletedError:
             logger.warning('{} returned non-existent object {}'.format(
