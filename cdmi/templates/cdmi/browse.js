@@ -20,20 +20,10 @@ $.fn.changeqos = function(target_capability) {
         target.css('display', 'block');
         select.children('ul[class=dropdown-menu]').empty();
 
-        // We'll display just the name of the capability until we get the details
-        target.text(target_capability.split('/').pop());
-
         // Clear old messages
         clear_messages();
 
-        // Retrieve details about the target capability
-        $.get("{% url 'cdmi:object_info' site.id '' %}/" + target_capability, function(data) {
-            var target_capability_metadata = data.metadata;
-
-            // Create a menuentry about the target qos in the table
-            target.makeqosentry(target_capability,
-                                target_capability_metadata);
-        });
+        target.getqosentry(target_capability);
 
         // Put the container / dataobject in transition
         $.post("{% url 'cdmi:update' site.id '' %}/" + file_path, {qos: target_capability, type: type}, function(data) {
@@ -60,6 +50,12 @@ $.fn.poll = function(timeout) {
         var progress = $("#progress-" + entry.attr('data-id'));
         var target = $("#target-" + entry.attr('data-id'));
         var qos = $("#qos-" + entry.attr('data-id'));
+
+        // Make sure we are displaying the loading animation
+        select.css('display', 'none');
+        progress.css('display', 'block');
+        target.css('display', 'block');
+        select.children('ul[class=dropdown-menu]').empty();
 
         setTimeout(function() {
             var url = "{% url 'cdmi:object_info' site.id path %}/" + entry.attr('data-name');
@@ -158,5 +154,22 @@ $.fn.makeqosentry = function(capabilities_uri, metadata) {
                                     .append($('<tr>')
                                             .append($('<td>').text('Geolocation'))
                                             .append($('<td>').text(metadata.cdmi_geographic_placement))))))
+    })
+}
+
+$.fn.getqosentry = function(capabilities_uri) {
+    return this.each(function() {
+        var target = $(this);
+
+        // We'll display just the name of the capability until we get the details
+        target.text(capabilities_uri.split('/').pop());
+
+        // Retrieve details about the target capability
+        $.get("{% url 'cdmi:object_info' site.id '' %}/" + capabilities_uri, function(data) {
+
+            // Create a menuentry about the target qos in the table
+            target.makeqosentry(capabilities_uri,
+                                data.metadata);
+        });
     })
 }

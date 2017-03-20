@@ -206,11 +206,23 @@ def list_objects(site, path, access_token):
     for child in children:
         child_url = urljoin(url+'/', child)
         try:
-            object_list.append(FileObject(
-                child, _query_cdmi(child_url, access_token)))
+            obj = FileObject(
+                child, _query_cdmi(child_url, access_token))
+
+            if obj.capabilities_target:
+                obj.capabilities_target_metadata = _query_cdmi(
+                    urljoin(site.site_uri, obj.capabilities_target),
+                    access_token)['metadata']
+
         except ObjectDeletedError:
             logger.warning('{} returned non-existent object {}'.format(
                 site.site_uri, child))
+        except KeyError as e:
+            raise CdmiError(msg='No metadata returned',
+                            url=obj.capabilities_target,
+                            key=e.args[0])
+        else:
+            object_list.append(obj)
 
     logger.debug('Found objects: {}'.format(object_list))
 

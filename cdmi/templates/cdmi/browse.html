@@ -176,9 +176,16 @@
         </td>
       </tr>
       <script>
-        {% if o.capabilities_polling %}
-        $("#entry-{{ o.name|slugify }}").poll({{ o.capabilities_polling }});
-        {% endif %}
+        $(document).ready(function() {
+          {% if o.capabilities_target %}
+          message('info', "Found {{ o.name }} in transition. Polling in {{ o.capabilities_polling }}ms");
+          $("#entry-{{ o.name|slugify }}").poll({{ o.capabilities_polling }});
+          $("#target-{{ o.name|slugify }}").makeqosentry(
+              "{{ o.capabilities_target }}",
+              {{ o.capabilities_target_metadata|safe }}
+          );
+          {% endif %}
+        });
       </script>
       {% endfor %}
     </tbody>
