@@ -1,5 +1,6 @@
 import os
 import logging
+import re
 
 from requests.compat import urljoin, urlsplit
 
@@ -46,7 +47,7 @@ def handle_update_object(request, site, path):
 def object_info(request, site, path):
     # Basically, this is a CDMI proxy for the jQuery
     site = Site.objects.get(id=site)
-    path = path.replace('//', '/')
+    path = re.sub('/+', '/', path)
 
     object_info = cdmi.get_status(
         site, path, request.session['access_token'])
@@ -58,7 +59,7 @@ def object_info(request, site, path):
 @user_passes_test(has_access_token)
 def update(request, site, path):
     site = Site.objects.get(id=site)
-    path = path.replace('//', '/')
+    path = re.sub('/+', '/', path)
 
     if request.method == 'POST':
         if 'qos' in request.POST and 'type' in request.POST:
@@ -76,7 +77,7 @@ def update(request, site, path):
 @user_passes_test(has_access_token)
 def delete(request, site, path):
     site = Site.objects.get(id=site)
-    path = path.replace('//', '/')
+    path = re.sub('/+', '/', path)
 
     if request.method == 'POST' and 'name' in request.POST and site.can_browse:
         browser.handle_delete_object(
@@ -96,7 +97,7 @@ def delete(request, site, path):
 @user_passes_test(has_access_token)
 def upload(request, site, path):
     site = Site.objects.get(id=site)
-    path = path.replace('//', '/')
+    path = re.sub('/+', '/', path)
 
     if request.method == 'POST' and 'file' in request.FILES and site.can_browse:
         browser.handle_uploaded_file(
@@ -115,7 +116,7 @@ def upload(request, site, path):
 @user_passes_test(has_access_token)
 def mkdir(request, site, path):
     site = Site.objects.get(id=site)
-    path = path.replace('//', '/')
+    path = re.sub('/+', '/', path)
 
     if request.method == 'POST' and 'name' in request.POST and site.can_browse:
         browser.handle_create_directory(
@@ -140,7 +141,7 @@ def browse_default(request, path):
 @user_passes_test(has_access_token)
 def browse(request, site, path):
     site = Site.objects.get(id=site)
-    path = path.replace('//', '/')
+    path = re.sub('/+', '/', path)
 
     username = request.user.username
 
