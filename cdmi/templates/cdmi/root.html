@@ -44,5 +44,16 @@
     </nav>
     {% block body %}
     {% endblock %}
+    <div class="container" style="width: 80%">
+      <table id="messages" class="table">
+        <tbody>
+          {% for message in messages %}
+          <tr{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+            <td>{{ message }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </body>
 </html>

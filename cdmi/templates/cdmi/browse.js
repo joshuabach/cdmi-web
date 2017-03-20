@@ -23,6 +23,9 @@ $.fn.changeqos = function(target_capability) {
         // We'll display just the name of the capability until we get the details
         target.text(target_capability.split('/').pop());
 
+        // Clear old messages
+        clear_messages();
+
         // Retrieve details about the target capability
         $.get("{% url 'cdmi:object_info' site.id '' %}/" + target_capability, function(data) {
             var target_capability_metadata = data.metadata;
@@ -37,11 +40,11 @@ $.fn.changeqos = function(target_capability) {
                    function(data) {
                        if ('metadata' in data && 'cdmi_recommended_polling_interval' in data.metadata) {
                            var next_timeout = data.metadata.cdmi_recommended_polling_interval;
-                           console.log("Put %o in transition. Polling in %o", file_path, next_timeout);
+                           message('info', "Put "+file_path+" in transition. Polling in "+next_timeout+"ms");
 
                            entry.poll(next_timeout);
                        } else {
-                           console.log("Put %o in transition. Polling now.", file_path);
+                           message('info', "Put "+file_path+" in transition");
 
                            entry.poll()
                        }
@@ -62,17 +65,18 @@ $.fn.poll = function(timeout) {
 
         setTimeout(function() {
             var url = "{% url 'cdmi:object_info' site.id path %}/" + entry.attr('data-name');
+            var file_path = "{{ path }}/"+entry.attr('data-name');
 
             // Check if the container / dataobject is still in transition
             $.get(url, function(data) {
                 if ('cdmi_recommended_polling_interval' in data.metadata) {
                     var next_timeout = data.metadata.cdmi_recommended_polling_interval;
-                    console.log("Polled %o, still in transition. Sleeping %o", url, next_timeout) ;
+                    message('info', "Polled "+file_path+", still in transition. Polling again in "+next_timeout+"ms") ;
 
                     entry.poll(next_timeout);
                 } else {
                     var new_capability = data.capabilitiesURI.split('/').pop();
-                    console.log("Polled %o, transition to %o finished", url, new_capability);
+                    message('info', "Polled "+file_path+", transition to "+new_capability+" finished");
 
                     // Switch back to displaying the target capability selection
                     progress.css('display', 'none');
