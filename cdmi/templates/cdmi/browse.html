@@ -70,7 +70,7 @@
         <th data-defaultsort="disabled"></th>
     </thead>
     <tbody>
-      {% if path and path != '.' %}
+      {% if path and path != request.user.username %}
       <tr>
         <td>
           <a href="{% url 'cdmi:browse' site.id path|dirname %}" method="get">
