@@ -1,11 +1,26 @@
+import os
+import shutil
+
 from django.db import models
-from django.core.files.storage import FileSystemStorage
+from django.core.files import storage
 from django.urls import reverse
 
 
 class CantBrowseSite(Exception):
     def __init__(self, site):
         self.site = site
+
+
+class FileSystemStorage(storage.FileSystemStorage):
+    def mkdir(self, name):
+        os.makedirs(os.path.join(self.location, name), exist_ok=True)
+
+    def delete(self, name):
+        try:
+            super().delete(name)
+        except IsADirectoryError:
+            # https://code.djangoproject.com/ticket/27836
+            shutil.rmtree(self.path(name))
 
 
 class Site(models.Model):
