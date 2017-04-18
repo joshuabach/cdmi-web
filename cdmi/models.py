@@ -9,11 +9,6 @@ from django.urls import reverse
 import webdav.client as webdav
 
 
-class CantBrowseSite(Exception):
-    def __init__(self, site):
-        self.site = site
-
-
 class FileSystemStorage(storage.FileSystemStorage):
     def mkdir(self, name):
         os.makedirs(os.path.join(self.location, name), exist_ok=True)
@@ -102,7 +97,7 @@ class Site(models.Model):
 
     @property
     def can_browse(self):
-        return self.browser_path != ''
+        return hasattr(self, 'storage')
 
     @property
     def storage(self):
@@ -113,7 +108,7 @@ class Site(models.Model):
         elif self.browser_webdav:
             return self.browser_webdav
         else:
-            raise CantBrowseSite(self)
+            raise AttributeError("'Site' object {} has no attribute 'storage'".format(self))
 
 
 class StorageType(models.Model):
