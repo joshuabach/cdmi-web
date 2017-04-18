@@ -5,8 +5,8 @@ from . import views
 app_name = 'cdmi'
 urlpatterns = [
     url(r'^$', views.IndexView.as_view(), name='index'),
-    url(r'^browse/(?P<site>[0-9]+)/(?P<path>.*)$', views.browse, name='browse'),
-    url(r'^browse/(?P<site>[0-9]+)$', views.browse, kwargs={'path': ''}, name='browse'),
+    url(r'^browse/(?P<site>[0-9]+)/(?P<path>.*)$', views.BrowserView.as_view(), name='browse'),
+    url(r'^browse/(?P<site>[0-9]+)$', views.BrowserView.as_view(), kwargs={'path': ''}, name='browse'),
     url(r'^browse/(?P<path>.*)$', views.browse_default, name='browse-default'),
     url(r'^upload/(?P<site>[0-9]+)/(?P<path>.*)$', views.upload, name='upload'),
     url(r'^mkdir/(?P<site>[0-9]+)/(?P<path>.*)$', views.mkdir, name='mkdir'),

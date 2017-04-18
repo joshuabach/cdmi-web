@@ -143,40 +143,47 @@ def browse_default(request, path):
     return redirect('cdmi:browse', site.id, path)
 
 
-@user_passes_test(has_access_token)
-def browse(request, site, path):
-    site = Site.objects.get(id=site)
-    path = re.sub('/+', '/', path)
+class BrowserView(UserPassesTestMixin, generic.TemplateView):
+    template_name = 'cdmi/browse.html'
+    redirect_field_name = 'next'
 
-    username = request.user.username
+    def test_func(self):
+        return has_access_token(self.request.user)
 
-    context = dict()
+    def get_context_data(self, **kwargs):
+        context = super(BrowserView, self).get_context_data(**kwargs)
+        site = Site.objects.get(id=self.kwargs['site'])
+        path = re.sub('/+', '/', self.kwargs['path'])
 
-    if site.can_browse:
-        if not path.startswith(request.user.username):
-            path = os.path.join(request.user.username, path)
-            if path[-1] == '/':
-                path = path[:-1]
+        username = self.request.user.username
 
-        browser.handle_create_directory(site, request.user.username, '',
-                                        request.session['access_token'])
+        context = dict()
 
-    logger.debug("Browsing path '{}'".format(path))
+        if site.can_browse:
+            if not path.startswith(self.request.user.username):
+                path = os.path.join(self.request.user.username, path)
+                if path[-1] == '/':
+                    path = path[:-1]
 
-    try:
-        object_list = cdmi.list_objects(site, path, request.session['access_token'])
-    except ConnectionError:
-        logger.warning('Could not connect to CDMI host {}'.format(site.site_uri))
-        error = 'Could not connect to {}'.format(site.site_uri)
-        object_list = None
-    except cdmi.CdmiError as e:
-        logger.warning('KeyError when handling response from {}'.format(site))
-        error = e.dict
-        object_list = None
-    else:
-        error = None
+            browser.handle_create_directory(site, self.request.user.username, '',
+                                            self.request.session['access_token'])
 
-    context.update({
+        logger.debug("Browsing path '{}'".format(path))
+
+        try:
+            object_list = cdmi.list_objects(site, path, self.request.session['access_token'])
+        except ConnectionError:
+            logger.warning('Could not connect to CDMI host {}'.format(site.site_uri))
+            error = 'Could not connect to {}'.format(site.site_uri)
+            object_list = None
+        except cdmi.CdmiError as e:
+            logger.warning('KeyError when handling response from {}'.format(site))
+            error = e.dict
+            object_list = None
+        else:
+            error = None
+
+        context.update({
             'object_list': object_list,
             'username': username,
             'path': path,
@@ -184,7 +191,7 @@ def browse(request, site, path):
             'error': error
         })
 
-    return render(request, 'cdmi/browse.html', context)
+        return context
 
 
 class IndexView(UserPassesTestMixin, generic.ListView):
