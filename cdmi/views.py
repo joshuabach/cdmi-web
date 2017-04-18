@@ -83,7 +83,8 @@ def delete(request, site, path):
         browser.handle_delete_object(
             site,
             request.POST['name'],
-            path)
+            path,
+            request.session['access_token'])
 
         messages.success(request, '{} deleted'.format(
             request.POST['name']))
@@ -103,7 +104,9 @@ def upload(request, site, path):
         browser.handle_uploaded_file(
             site,
             request.FILES['file'],
-            path)
+            path,
+            request.session['access_token'])
+
         messages.success(request, '{} uploaded'.format(
             request.FILES['file'].name))
 
@@ -122,7 +125,9 @@ def mkdir(request, site, path):
         browser.handle_create_directory(
             site,
             request.POST['name'],
-            path)
+            path,
+            request.session['access_token'])
+
         messages.success(request, '{}/{} created'.format(
             path, request.POST['name']))
 
@@ -153,7 +158,8 @@ def browse(request, site, path):
             if path[-1] == '/':
                 path = path[:-1]
 
-        browser.handle_create_directory(site, request.user.username, '')
+        browser.handle_create_directory(site, request.user.username, '',
+                                        request.session['access_token'])
 
     logger.debug("Browsing path '{}'".format(path))
 

@@ -14,6 +14,10 @@ logger = logging.getLogger(__name__)
 
 
 class FileSystemStorage(storage.FileSystemStorage):
+    def ensure_connected(self, *args, **kwargs):
+        # Nothing needs to be done to connect to the local filesystem
+        pass
+
     def mkdir(self, name):
         os.makedirs(os.path.join(self.location, name), exist_ok=True)
 
@@ -33,13 +37,15 @@ class WebDAVServer(models.Model, storage.Storage):
     def __str__(self):
         return self.hostname
 
-    def ensure_connected(self):
+    def ensure_connected(self, access_token=None):
         if not hasattr(self, 'connection'):
-            options = {
-                'webdav_hostname': self.hostname,
-                'webdav_login': self.login,
-                'webdav_password': self.passwd,
-            }
+            options = dict()
+            options['webdav_hostname'] = self.hostname
+            if self.login and self.passwd:
+                options['webdav_login'] = self.login
+                options['webdav_password'] = self.passwd
+            elif access_token:
+                options['webdav_token'] = access_token
 
             logger.debug("WebDAV: Connecting to {}".format(options))
             self.connection = webdav.Client(options)
