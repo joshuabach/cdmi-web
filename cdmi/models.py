@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 
 
 class FileSystemStorage(storage.FileSystemStorage):
+    access_type = 'local File system'
+
     def ensure_connected(self, *args, **kwargs):
         # Nothing needs to be done to connect to the local filesystem
         pass
@@ -33,6 +35,8 @@ class WebDAVServer(models.Model, storage.Storage):
     hostname = models.URLField()
     login = models.CharField(max_length=200)
     passwd = models.CharField(max_length=200)
+
+    access_type = 'WebDAV'
 
     def __str__(self):
         return self.hostname
