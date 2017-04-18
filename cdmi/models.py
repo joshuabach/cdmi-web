@@ -1,12 +1,16 @@
 import os
 import shutil
 import tempfile
+import logging
 
 from django.db import models
 from django.core.files import storage
 from django.urls import reverse
 
 import webdav.client as webdav
+
+
+logger = logging.getLogger(__name__)
 
 
 class FileSystemStorage(storage.FileSystemStorage):
@@ -31,11 +35,14 @@ class WebDAVServer(models.Model, storage.Storage):
 
     def ensure_connected(self):
         if not hasattr(self, 'connection'):
-            self.connection = webdav.Client(dict(
-                webdav_hostname=self.hostname,
-                webdav_login=self.login,
-                webdav_password=self.passwd,
-            ))
+            options = {
+                'webdav_hostname': self.hostname,
+                'webdav_login': self.login,
+                'webdav_password': self.passwd,
+            }
+
+            logger.debug("WebDAV: Connecting to {}".format(options))
+            self.connection = webdav.Client(options)
 
     def delete(self, name):
         self.ensure_connected()
