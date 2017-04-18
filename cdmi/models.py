@@ -1,9 +1,12 @@
 import os
 import shutil
+import tempfile
 
 from django.db import models
 from django.core.files import storage
 from django.urls import reverse
+
+import webdav.client as webdav
 
 
 class CantBrowseSite(Exception):
@@ -23,6 +26,58 @@ class FileSystemStorage(storage.FileSystemStorage):
             shutil.rmtree(self.path(name))
 
 
+class WebDAVServer(models.Model, storage.Storage):
+    hostname = models.URLField()
+    login = models.CharField(max_length=200)
+    passwd = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.hostname
+
+    def ensure_connected(self):
+        if not hasattr(self, 'connection'):
+            self.connection = webdav.Client(dict(
+                webdav_hostname=self.hostname,
+                webdav_login=self.login,
+                webdav_password=self.passwd,
+            ))
+
+    def delete(self, name):
+        self.ensure_connected()
+        self.connection.clean(name)
+
+    def exists(self, name):
+        self.ensure_connected()
+        self.connection.check(name)
+
+    def listdir(self, path):
+        self.ensure_connected()
+        self.connection.list(path)
+
+    def open(self, name, mode='rb'):
+        self.ensure_connected()
+        tmp = tempfile.NamedTemporaryFile()
+        self.connection.download_sync(
+            remote_path=name,
+            local_path=tmp.name)
+
+        tmp.seek(0)
+        return tmp
+
+    def save(self, name, content, max_length=None):
+        self.ensure_connected()
+        tmp = tempfile.NamedTemporaryFile()
+        tmp.write(content.read())
+
+        self.connection.upload_sync(
+            remote_path=name,
+            local_path=tmp.name)
+
+    def mkdir(self, name):
+        self.ensure_connected()
+        self.connection.mkdir(name)
+
+
 class Site(models.Model):
     site_name = models.CharField(max_length=200)
     site_uri = models.URLField()
@@ -37,6 +92,9 @@ class Site(models.Model):
     browser_path = models.CharField(
         blank=True, default='', max_length=128)
 
+    browser_webdav = models.ForeignKey(WebDAVServer,
+        null=True, on_delete=models.SET_NULL)
+
     last_modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
@@ -48,10 +106,12 @@ class Site(models.Model):
 
     @property
     def storage(self):
-        if self.can_browse:
+        if self.browser_path:
             return FileSystemStorage(
                 location=self.browser_path,
                 base_url=reverse('cdmi:browse', args=[self.id, '']))
+        elif self.browser_webdav:
+            return self.browser_webdav
         else:
             raise CantBrowseSite(self)
 
