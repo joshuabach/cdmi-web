@@ -230,7 +230,7 @@ class IndexView(CdmiWebView):
                 msg = '{}: {}'.format(e.dict.get('url', site.site_uri), e.dict['msg'])
 
                 logger.warning(msg)
-                messages.error(self.request, msg)
+                messages.warning(self.request, msg)
 
             try:
                 qoses = cdmi.get_all_capabilities(
