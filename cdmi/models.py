@@ -6,6 +6,7 @@ import logging
 from django.db import models
 from django.core.files import storage
 from django.urls import reverse
+from django.forms import ValidationError
 
 import webdav.client as webdav
 
@@ -104,10 +105,21 @@ class Site(models.Model):
     browser_path = models.CharField(
         blank=True, default='', max_length=128)
 
-    browser_webdav = models.ForeignKey(WebDAVServer,
-        null=True, on_delete=models.SET_NULL)
+    browser_webdav = models.ForeignKey(
+        WebDAVServer,
+        blank=True, null=True, on_delete=models.SET_NULL)
+
+    default = models.BooleanField(default=False)
 
     last_modified = models.DateTimeField(auto_now=True)
+
+    def clean(self):
+        if self.default:
+            for site in Site.objects.exclude(pk=self.pk).filter(default=True):
+                site.default = False
+                site.save()
+        elif Site.objects.filter(default=True).count() <= 0:
+            raise ValidationError("Exactly one site in the database needs to be marked 'Default'")
 
     def __str__(self):
         return self.site_name

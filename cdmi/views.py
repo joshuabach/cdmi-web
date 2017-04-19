@@ -155,7 +155,7 @@ class BrowserView(CdmiWebView):
             site = Site.objects.get(id=self.kwargs['site'])
         else:
             # Select a default site
-            site = Site.objects.filter(site_uri__contains='localhost')[0]
+            site = Site.objects.get(default=True)
         path = re.sub('/+', '/', self.kwargs['path'])
 
         if site.can_browse:
