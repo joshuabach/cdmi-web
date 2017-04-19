@@ -49,10 +49,14 @@ def object_info(request, site, path):
     # Basically, this is a CDMI proxy for the jQuery
     site = Site.objects.get(id=site)
     path = re.sub('/+', '/', path)
+    if site.can_browse and not path.startswith('/cdmi_'):
+        cdmi_path = os.path.join(request.user.username, re.sub('^/', '', path))
+    else:
+        cdmi_path = path
 
     try:
         object_info = cdmi.get_status(
-            site, path, request.session['access_token'])
+            site, cdmi_path, request.session['access_token'])
     except CdmiError as e:
         logger.warning('{}: {}'.format(e.dict.get('url', site.site_uri), e.dict['msg']))
 
@@ -70,12 +74,16 @@ def object_info(request, site, path):
 def update(request, site, path):
     site = Site.objects.get(id=site)
     path = re.sub('/+', '/', path)
+    if site.can_browse:
+        cdmi_path = os.path.join(request.user.username, re.sub('^/', '', path))
+    else:
+        cdmi_path = path
 
     if request.method == 'POST':
         if 'qos' in request.POST and 'type' in request.POST:
             logger.debug("Change {} to {}".format(
-                path, request.POST['qos']))
-            response = handle_update_object(request, site, path)
+                cdmi_path, request.POST['qos']))
+            response = handle_update_object(request, site, cdmi_path)
             return JsonResponse(response, status=200)
         else:
             return JsonResponse({'missing_parameters': ['qos', 'type']},
@@ -88,12 +96,16 @@ def update(request, site, path):
 def delete(request, site, path):
     site = Site.objects.get(id=site)
     path = re.sub('/+', '/', path)
+    if site.can_browse:
+        cdmi_path = os.path.join(request.user.username, re.sub('^/', '', path))
+    else:
+        cdmi_path = path
 
     if request.method == 'POST' and 'name' in request.POST and site.can_browse:
         browser.handle_delete_object(
             site,
             request.POST['name'],
-            path,
+            cdmi_path,
             request.session['access_token'])
 
         messages.success(request, '{} deleted'.format(
@@ -109,12 +121,16 @@ def delete(request, site, path):
 def upload(request, site, path):
     site = Site.objects.get(id=site)
     path = re.sub('/+', '/', path)
+    if site.can_browse:
+        cdmi_path = os.path.join(request.user.username, re.sub('^/', '', path))
+    else:
+        cdmi_path = path
 
     if request.method == 'POST' and 'file' in request.FILES and site.can_browse:
         browser.handle_uploaded_file(
             site,
             request.FILES['file'],
-            path,
+            cdmi_path,
             request.session['access_token'])
 
         messages.success(request, '{} uploaded'.format(
@@ -130,12 +146,16 @@ def upload(request, site, path):
 def mkdir(request, site, path):
     site = Site.objects.get(id=site)
     path = re.sub('/+', '/', path)
+    if site.can_browse:
+        cdmi_path = os.path.join(request.user.username, re.sub('^/', '', path))
+    else:
+        cdmi_path = path
 
     if request.method == 'POST' and 'name' in request.POST and site.can_browse:
         browser.handle_create_directory(
             site,
             request.POST['name'],
-            path,
+            cdmi_path,
             request.session['access_token'])
 
         messages.success(request, '{}/{} created'.format(
@@ -163,12 +183,7 @@ class BrowserView(CdmiWebView):
         else:
             self.site = Site.objects.get(default=True)
 
-        path = re.sub('/+', '/', path)
-        if self.site.can_browse and not path.startswith(self.request.user.username):
-            self.path = os.path.join(self.request.user.username,
-                                     re.sub('/$', '', path))
-        else:
-            self.path = path
+        self.path = re.sub('/+', '/', path)
 
         return super().dispatch(request, site, path)
 
@@ -176,15 +191,19 @@ class BrowserView(CdmiWebView):
         context = super().get_context_data(**kwargs)
 
         if self.site.can_browse:
+            path = os.path.join(self.request.user.username, re.sub('^/', '', self.path))
+
             browser.handle_create_directory(
                 self.site, self.request.user.username, '',
                 self.request.session['access_token'])
+        else:
+            path = self.path
 
-        logger.debug("Browsing path '{}'".format(self.path))
+        logger.debug("Browsing path '{}'".format(path))
 
         try:
             context['object_list'] = cdmi.list_objects(
-                self.site, self.path, self.request.session['access_token'])
+                self.site, path, self.request.session['access_token'])
         except (ConnectionError, CdmiError) as e:
             msg = '{}: {}'.format(e.dict.get('url', self.site.site_uri), e.dict['msg'])
 
