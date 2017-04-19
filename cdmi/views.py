@@ -137,12 +137,6 @@ def mkdir(request, site, path):
         return redirect('cdmi:browse', site.id, path)
 
 
-def browse_default(request, path):
-    site = Site.objects.filter(site_uri__contains='localhost')[0]
-
-    return redirect('cdmi:browse', site.id, path)
-
-
 class CdmiWebView(UserPassesTestMixin, generic.TemplateView):
     redirect_field_name = 'next'
 
@@ -155,7 +149,12 @@ class BrowserView(CdmiWebView):
 
     def get_context_data(self, **kwargs):
         context = super(BrowserView, self).get_context_data(**kwargs)
-        site = Site.objects.get(id=self.kwargs['site'])
+
+        if self.kwargs['site']:
+            site = Site.objects.get(id=self.kwargs['site'])
+        else:
+            # Select a default site
+            site = Site.objects.filter(site_uri__contains='localhost')[0]
         path = re.sub('/+', '/', self.kwargs['path'])
 
         if site.can_browse:
