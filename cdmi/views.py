@@ -158,10 +158,6 @@ class BrowserView(CdmiWebView):
         site = Site.objects.get(id=self.kwargs['site'])
         path = re.sub('/+', '/', self.kwargs['path'])
 
-        username = self.request.user.username
-
-        context = dict()
-
         if site.can_browse:
             if not path.startswith(self.request.user.username):
                 path = os.path.join(self.request.user.username, path)
@@ -188,7 +184,7 @@ class BrowserView(CdmiWebView):
 
         context.update({
             'object_list': object_list,
-            'username': username,
+            'username': self.request.user.username,
             'path': path,
             'site': site,
             'error': error
