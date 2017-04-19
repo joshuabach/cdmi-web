@@ -19,36 +19,36 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        {% if site.logo_uri %}
-        <a class="navbar-brand" style="padding: 5px 15px"><img src="{{ site.logo_uri }}" height="40"></a>
+        {% if view.site.logo_uri %}
+        <a class="navbar-brand" style="padding: 5px 15px"><img src="{{ view.site.logo_uri }}" height="40"></a>
         {% endif %}
-        <a class="navbar-brand" href="#"><strong>{{ site.site_uri }}</strong>/{{ path }}</a>
+        <a class="navbar-brand" href="#"><strong>{{ view.site.site_uri }}</strong>/{{ view.path }}</a>
       </div>
       <div id="navbar" class="navbar-collapse collapse">
         <ul class="nav navbar-nav navbar-right">
           <li>
             <button data-toggle="modal"
-                    {% if not site.can_browse %}
+                    {% if not view.site.can_browse %}
                     title="Unavailable for this CDMI site"
                     {% else %}
-                    title="Create Directory via {{ site.storage.access_type }}"
+                    title="Create Directory via {{ view.site.storage.access_type }}"
                     data-target="#mkdir"
                     {% endif %}
                     class="btn btn-primary
-                           {% if not site.can_browse %}disabled{% endif %}">
+                           {% if not view.site.can_browse %}disabled{% endif %}">
               Create Directory
             </button>
           </li>
           <li>
             <button data-toggle="modal"
-                    {% if not site.can_browse %}
+                    {% if not view.site.can_browse %}
                     title="Unavailable for this CDMI site"
                     {% else %}
-                    title="Upload File via {{ site.storage.access_type }}"
+                    title="Upload File via {{ view.site.storage.access_type }}"
                     data-target="#upload"
                     {% endif %}
                     class="btn btn-primary
-                           {% if not site.can_browse %}disabled{% endif %}">
+                           {% if not view.site.can_browse %}disabled{% endif %}">
               Upload File
             </button>
           </li>
@@ -70,10 +70,10 @@
         <th data-defaultsort="disabled"></th>
     </thead>
     <tbody>
-      {% if path and path != request.user.username %}
+      {% if view.path and view.path != request.user.username %}
       <tr>
         <td>
-          <a href="{% url 'cdmi:browse' site.id path|dirname %}" method="get">
+          <a href="{% url 'cdmi:browse' view.site.id view.path|dirname %}" method="get">
             ..
           </a>
         </td>
@@ -94,10 +94,10 @@
         </td>
         {% else %}
         <td>
-          <a href="{% if path %}
-                    {% url 'cdmi:browse' site.id path|add:"/"|add:o.name %}
+          <a href="{% if view.path %}
+                    {% url 'cdmi:browse' view.site.id view.path|add:"/"|add:o.name %}
                    {% else %}
-                    {% url 'cdmi:browse' site.id o.name %}
+                    {% url 'cdmi:browse' view.site.id o.name %}
                    {% endif %}">
             {{ o.name }}
           </a>
@@ -163,13 +163,13 @@
           </div>
         </td>
         <td>
-          <form action="{% url 'cdmi:delete' site.id path %}" method="post">
+          <form action="{% url 'cdmi:delete' view.site.id view.path %}" method="post">
             {% csrf_token %}
             <input type="hidden" name="name" value="{{ o.name }}" />
             <button class="btn bare-btn btn-small
-                           {% if not site.can_browse %}disabled{% endif %}"
-                    {% if site.can_browse %}
-                    title="Delete file via {{ site.storage.access_type }}"
+                           {% if not view.site.can_browse %}disabled{% endif %}"
+                    {% if view.site.can_browse %}
+                    title="Delete file via {{ view.site.storage.access_type }}"
                     {% else %
                     title="Unavailable for this CDMI site"
                     {% endif %}
@@ -204,7 +204,7 @@
         <h4 class="modal-title" id="uploadLabel">Upload file</h4>
       </div>
       <div class="modal-body">
-        <form action="{% url 'cdmi:upload' site.id path %}" method="post" enctype="multipart/form-data">
+        <form action="{% url 'cdmi:upload' view.site.id view.path %}" method="post" enctype="multipart/form-data">
           {% csrf_token %}
           <div class="form-group">
             <input type="file" id="file" name="file" required>
@@ -229,7 +229,7 @@
         <h4 class="modal-title" id="mkdirLabel">Create Directory</h4>
       </div>
       <div class="modal-body">
-        <form action="{% url 'cdmi:mkdir' site.id path %}" method="post">
+        <form action="{% url 'cdmi:mkdir' view.site.id view.path %}" method="post">
           {% csrf_token %}
           <div class="form-group">
             <input type="text" id="name" name="name" required>

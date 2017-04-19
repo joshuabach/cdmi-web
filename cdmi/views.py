@@ -2,9 +2,9 @@ import os
 import logging
 import re
 
-from requests.compat import urljoin, urlsplit
+from requests.compat import urlsplit
 
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect
 from django.views import generic
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
@@ -148,35 +148,36 @@ class CdmiWebView(UserPassesTestMixin, generic.TemplateView):
 class BrowserView(CdmiWebView):
     template_name = 'cdmi/browse.html'
 
-    def get_context_data(self, **kwargs):
-        context = super(BrowserView, self).get_context_data(**kwargs)
-
-        if self.kwargs['site']:
-            site = Site.objects.get(id=self.kwargs['site'])
+    def dispatch(self, request, site, path):
+        if site:
+            self.site = Site.objects.get(id=site)
         else:
-            # Select a default site
-            site = Site.objects.get(default=True)
-        path = re.sub('/+', '/', self.kwargs['path'])
+            self.site = Site.objects.get(default=True)
 
-        if site.can_browse:
-            if not path.startswith(self.request.user.username):
-                path = os.path.join(self.request.user.username, path)
-                if path[-1] == '/':
-                    path = path[:-1]
+        path = re.sub('/+', '/', path)
+        if self.site.can_browse and not path.startswith(self.request.user.username):
+            self.path = os.path.join(self.request.user.username,
+                                     re.sub('/$', '', path))
+        else:
+            self.path = path
 
-            browser.handle_create_directory(site, self.request.user.username, '',
-                                            self.request.session['access_token'])
+        return super().dispatch(request, site, path)
 
-        logger.debug("Browsing path '{}'".format(path))
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
 
-        context['path'] = path
-        context['site'] = site
+        if self.site.can_browse:
+            browser.handle_create_directory(
+                self.site, self.request.user.username, '',
+                self.request.session['access_token'])
+
+        logger.debug("Browsing path '{}'".format(self.path))
 
         try:
             context['object_list'] = cdmi.list_objects(
-                site, path, self.request.session['access_token'])
+                self.site, self.path, self.request.session['access_token'])
         except (ConnectionError, CdmiError) as e:
-            msg = '{}: {}'.format(site.site_uri, e.dict['msg'])
+            msg = '{}: {}'.format(self.site.site_uri, e.dict['msg'])
 
             logger.warning(msg)
             messages.error(self.request, msg)

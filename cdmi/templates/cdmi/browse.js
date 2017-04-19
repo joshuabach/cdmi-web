@@ -11,7 +11,7 @@ $.fn.changeqos = function(target_capability) {
         var progress = $("#progress-" + entry.attr('data-id'));
         var target = $("#target-" + entry.attr('data-id'));
 
-        var file_path = "{{ path }}/" + entry.attr('data-name');
+        var file_path = "{{ view.path }}/" + entry.attr('data-name');
         var type = entry.attr('data-type');
 
         // Switch to displaying the loading animation
@@ -23,7 +23,7 @@ $.fn.changeqos = function(target_capability) {
         target.getqosentry(target_capability);
 
         // Put the container / dataobject in transition
-        $.post("{% url 'cdmi:update' site.id '' %}/" + file_path, {qos: target_capability, type: type}, function(data) {
+        $.post("{% url 'cdmi:update' view.site.id '' %}/" + file_path, {qos: target_capability, type: type}, function(data) {
             if ('metadata' in data && 'cdmi_recommended_polling_interval' in data.metadata) {
                 var next_timeout = data.metadata.cdmi_recommended_polling_interval;
                 message('info', "Put "+file_path+" in transition. Polling in "+next_timeout+"ms");
@@ -55,8 +55,8 @@ $.fn.poll = function(timeout) {
         select.children('ul[class=dropdown-menu]').empty();
 
         setTimeout(function() {
-            var url = "{% url 'cdmi:object_info' site.id path %}/" + entry.attr('data-name');
-            var file_path = "{{ path }}/"+entry.attr('data-name');
+            var url = "{% url 'cdmi:object_info' view.site.id view.path %}/" + entry.attr('data-name');
+            var file_path = "{{ view.path }}/"+entry.attr('data-name');
 
             // Check if the container / dataobject is still in transition
             $.get(url, function(data) {
@@ -162,7 +162,7 @@ $.fn.getqosentry = function(capabilities_uri) {
         target.text(capabilities_uri.split('/').pop());
 
         // Retrieve details about the target capability
-        $.get("{% url 'cdmi:object_info' site.id '' %}/" + capabilities_uri, function(data) {
+        $.get("{% url 'cdmi:object_info' view.site.id '' %}/" + capabilities_uri, function(data) {
 
             // Create a menuentry about the target qos in the table
             target.makeqosentry(capabilities_uri,
