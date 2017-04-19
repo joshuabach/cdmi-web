@@ -59,9 +59,7 @@
 </div>
 
 <div class="container">
-  {% if error %}
-  {% include 'cdmi/dict.html' with object=error %}
-  {% else %}
+  {% if object_list %}
   <table class="table sortable" style="font-size:14px">
     <thead><tr>
         <th data-defaultsort="asc">Name</th>

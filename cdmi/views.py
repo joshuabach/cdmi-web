@@ -16,6 +16,7 @@ from django.contrib.sessions.models import Session
 
 from .models import Site
 from . import cdmi, browser
+from .cdmi import CdmiError
 
 logger = logging.getLogger(__name__)
 
@@ -170,23 +171,19 @@ class BrowserView(CdmiWebView):
 
         try:
             object_list = cdmi.list_objects(site, path, self.request.session['access_token'])
-        except ConnectionError:
-            logger.warning('Could not connect to CDMI host {}'.format(site.site_uri))
-            error = 'Could not connect to {}'.format(site.site_uri)
+        except (ConnectionError, CdmiError) as e:
+            msg = '{}: {}'.format(site.site_uri, e.dict['msg'])
+
+            logger.warning(msg)
+            messages.error(self.request, msg)
+
             object_list = None
-        except cdmi.CdmiError as e:
-            logger.warning('KeyError when handling response from {}'.format(site))
-            error = e.dict
-            object_list = None
-        else:
-            error = None
 
         context.update({
             'object_list': object_list,
             'username': self.request.user.username,
             'path': path,
             'site': site,
-            'error': error
         })
 
         return context
