@@ -169,21 +169,17 @@ class BrowserView(CdmiWebView):
 
         logger.debug("Browsing path '{}'".format(path))
 
+        context['path'] = path
+        context['site'] = site
+
         try:
-            object_list = cdmi.list_objects(site, path, self.request.session['access_token'])
+            context['object_list'] = cdmi.list_objects(
+                site, path, self.request.session['access_token'])
         except (ConnectionError, CdmiError) as e:
             msg = '{}: {}'.format(site.site_uri, e.dict['msg'])
 
             logger.warning(msg)
             messages.error(self.request, msg)
-
-            object_list = None
-
-        context.update({
-            'object_list': object_list,
-            'path': path,
-            'site': site,
-        })
 
         return context
 
