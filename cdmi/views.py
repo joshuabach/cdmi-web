@@ -226,7 +226,13 @@ class IndexView(CdmiWebView):
                 site.root_container = cdmi.get_status(
                     site, '/',
                     self.request.session['access_token'])
+            except (ConnectionError, CdmiError) as e:
+                msg = '{}: {}'.format(e.dict.get('url', site.site_uri), e.dict['msg'])
 
+                logger.warning(msg)
+                messages.error(self.request, msg)
+
+            try:
                 qoses = cdmi.get_all_capabilities(
                     site.site_uri,
                     self.request.session['access_token'])
