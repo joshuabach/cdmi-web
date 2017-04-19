@@ -50,10 +50,19 @@ def object_info(request, site, path):
     site = Site.objects.get(id=site)
     path = re.sub('/+', '/', path)
 
-    object_info = cdmi.get_status(
-        site, path, request.session['access_token'])
+    try:
+        object_info = cdmi.get_status(
+            site, path, request.session['access_token'])
+    except CdmiError as e:
+        logger.warning('{}: {}'.format(e.dict.get('url', site.site_uri), e.dict['msg']))
 
-    return JsonResponse(object_info)
+        return JsonResponse({
+            'error': e.dict['msg'],
+            'site': site.site_uri,
+            'url': e.dict['url']
+        })
+    else:
+        return JsonResponse(object_info)
 
 
 @csrf_exempt
@@ -177,7 +186,7 @@ class BrowserView(CdmiWebView):
             context['object_list'] = cdmi.list_objects(
                 self.site, self.path, self.request.session['access_token'])
         except (ConnectionError, CdmiError) as e:
-            msg = '{}: {}'.format(self.site.site_uri, e.dict['msg'])
+            msg = '{}: {}'.format(e.dict.get('url', self.site.site_uri), e.dict['msg'])
 
             logger.warning(msg)
             messages.error(self.request, msg)
@@ -203,7 +212,7 @@ class IndexView(CdmiWebView):
                     site.site_uri,
                     self.request.session['access_token'])
             except (ConnectionError, CdmiError) as e:
-                msg = '{}: {}'.format(site.site_uri, e.dict['msg'])
+                msg = '{}: {}'.format(e.dict.get('url', site.site_uri), e.dict['msg'])
 
                 logger.warning(msg)
                 messages.error(self.request, msg)

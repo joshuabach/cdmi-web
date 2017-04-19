@@ -24,7 +24,7 @@ def _json_resp(response):
     try:
         return response.json()
     except JSONDecodeError:
-        return {'error': 'Could not decode', 'response': response.text}
+        return {'error': 'Could not decode as JSON', 'message': response.text}
 
 
 def _auth_method(url):
