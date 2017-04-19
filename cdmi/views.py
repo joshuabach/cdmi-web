@@ -210,9 +210,11 @@ class IndexView(CdmiWebView):
                 qoses = cdmi.get_all_capabilities(
                     site.site_uri,
                     self.request.session['access_token'])
-            except cdmi.CdmiError as e:
-                messages.error(self.request,
-                               '{}: {}'.format(site.site_uri, e.dict['msg']))
+            except (ConnectionError, CdmiError) as e:
+                msg = '{}: {}'.format(site.site_uri, e.dict['msg'])
+
+                logger.warning(msg)
+                messages.error(self.request, msg)
             else:
                 for qos in qoses:
                     qos['site'] = site

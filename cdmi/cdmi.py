@@ -78,6 +78,12 @@ def _query_cdmi(url, access_token):
     logger.debug('GET {} -> {} {}'.format(
         url, r.status_code, json_response))
 
+    if 'error' in json_response:
+        raise CdmiError(
+            msg='Error ({}): {}'.format(
+                json_response['error'], json_response['message']),
+            url=url)
+
     return json_response
 
 
