@@ -143,12 +143,15 @@ def browse_default(request, path):
     return redirect('cdmi:browse', site.id, path)
 
 
-class BrowserView(UserPassesTestMixin, generic.TemplateView):
-    template_name = 'cdmi/browse.html'
+class CdmiWebView(UserPassesTestMixin, generic.TemplateView):
     redirect_field_name = 'next'
 
     def test_func(self):
         return has_access_token(self.request.user)
+
+
+class BrowserView(CdmiWebView):
+    template_name = 'cdmi/browse.html'
 
     def get_context_data(self, **kwargs):
         context = super(BrowserView, self).get_context_data(**kwargs)
@@ -194,16 +197,8 @@ class BrowserView(UserPassesTestMixin, generic.TemplateView):
         return context
 
 
-class IndexView(UserPassesTestMixin, generic.ListView):
+class IndexView(CdmiWebView):
     template_name = 'cdmi/index.html'
-    redirect_field_name = 'next'
-
-    model = Site
-
-    context_object_name = 'storage_list'
-
-    def test_func(self):
-        return has_access_token(self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
