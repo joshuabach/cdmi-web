@@ -59,7 +59,7 @@
 </div>
 
 <div class="container">
-  {% if object_list %}
+  {% if object_list or view.path %}
   <table class="table sortable" style="font-size:14px">
     <thead><tr>
         <th data-defaultsort="asc">Name</th>
