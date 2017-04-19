@@ -79,10 +79,16 @@ def _query_cdmi(url, access_token):
         url, r.status_code, json_response))
 
     if 'error' in json_response:
-        raise CdmiError(
-            msg='Error ({}): {}'.format(
-                json_response['error'], json_response['message']),
-            url=url)
+        if 'Object not found' in json_response['message']:
+            raise CdmiError(
+                msg='Error ({}): {}'.format(
+                    json_response['message'], urlsplit(url).path),
+                url=url)
+        else:
+            raise CdmiError(
+                msg='Error ({}): {}'.format(
+                    json_response['error'], json_response['message']),
+                url=url)
 
     return json_response
 
