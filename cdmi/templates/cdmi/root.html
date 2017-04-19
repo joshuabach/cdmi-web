@@ -36,7 +36,7 @@
           </div>
           <a class="navbar-brand" href="/">CDMI Web</a>
         </div>
-        <p class="navbar-text">Logged in as: {{ username }}</p>
+        <p class="navbar-text">Logged in as: {{ request.user.username }}</p>
         <ul class="nav navbar-nav navbar-right">
           <li><a href="{% url 'openid:logout' %}">Logout</a></li>
         </ul>

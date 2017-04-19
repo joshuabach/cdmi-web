@@ -181,7 +181,6 @@ class BrowserView(CdmiWebView):
 
         context.update({
             'object_list': object_list,
-            'username': self.request.user.username,
             'path': path,
             'site': site,
         })
@@ -194,7 +193,6 @@ class IndexView(CdmiWebView):
 
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
-        context['username'] = self.request.user.username
         context['sites'] = Site.objects.all()
 
         context['qualities_of_service'] = []
