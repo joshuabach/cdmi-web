@@ -182,6 +182,7 @@ class FileObject(object):
             self.type = 'File'
         elif type == 'application/cdmi-container':
             self.type = 'Directory'
+            self.name += '/'
 
         capabilities_uri = status.get('capabilitiesURI', '')
         metadata = status['metadata']
