@@ -1,5 +1,6 @@
 import requests
 import logging
+import re
 
 from requests.compat import urljoin, urlsplit
 from requests.exceptions import ConnectionError
@@ -125,7 +126,7 @@ def get_capabilities_class(url, access_token, classes=None):
         latency = capabilities['metadata']['cdmi_latency']
         location = capabilities['metadata']['cdmi_geographic_placement']
         transitions = capabilities['metadata']['cdmi_capabilities_allowed']
-        transitions = [x.rsplit('/', 1)[-1] for x in transitions]
+        transitions = [re.sub('/$', '', x).rsplit('/', 1)[-1] for x in transitions]
 
         qos = [storage_type
                for storage_type, predicate in settings.STORAGE_TYPES
