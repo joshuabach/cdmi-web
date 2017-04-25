@@ -13,6 +13,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.sessions.models import Session
 
+from webdav.connection import NotConnection
 
 from .models import Site
 from . import cdmi, browser
@@ -187,19 +188,25 @@ class BrowserView(CdmiWebView):
 
         path = true_path(self.path, self.site, self.request.user)
 
-        if self.site.can_browse:
-            browser.handle_create_directory(
-                self.site, os.path.join(self.site.root_container, self.request.user.username), '',
-                self.request.session['access_token'])
-
         logger.debug("Browsing path '{}'".format(path))
 
         context['display_path'] = os.path.join(self.site.root_container, self.path)
 
         try:
+            if self.site.can_browse:
+                browser.handle_create_directory(
+                    self.site, os.path.join(self.site.root_container, self.request.user.username), '',
+                    self.request.session['access_token'])
+
             context['object_list'] = cdmi.list_objects(
                 self.site, path, self.request.session['access_token'])
-        except (ConnectionError, CdmiError) as e:
+        except (ConnectionError, NotConnection) as e:
+            msg = '{}: {}'.format(self.site.site_uri, str(e))
+
+            logger.warning(msg)
+            messages.error(self.request, msg)
+
+        except CdmiError as e:
             msg = '{}: {}'.format(e.dict.get('url', self.site.site_uri), e.dict['msg'])
 
             logger.warning(msg)
