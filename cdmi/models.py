@@ -34,8 +34,8 @@ class FileSystemStorage(storage.FileSystemStorage):
 
 class WebDAVServer(models.Model, storage.Storage):
     hostname = models.URLField()
-    login = models.CharField(max_length=200)
-    passwd = models.CharField(max_length=200)
+    login = models.CharField(max_length=200, blank=True, default='')
+    passwd = models.CharField(max_length=200, blank=True, default='')
 
     access_type = 'WebDAV'
 
