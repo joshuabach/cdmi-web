@@ -21,7 +21,7 @@ def handle_uploaded_file(site, file, path, access_token):
     logger.debug("Upload {} to {}".format(storage_path, site))
 
     site.storage.ensure_connected(access_token)
-    site.storage.save(storage_path, file)
+    site.storage.store(storage_path, file)
 
 
 def handle_create_directory(site, name, path, access_token):

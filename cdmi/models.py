@@ -31,6 +31,9 @@ class FileSystemStorage(storage.FileSystemStorage):
             # https://code.djangoproject.com/ticket/27836
             shutil.rmtree(self.path(name))
 
+    def store(self, name, content, max_length=None):
+        self.save(name, content, max_length)
+
 
 class WebDAVServer(models.Model, storage.Storage):
     hostname = models.URLField()
@@ -77,7 +80,7 @@ class WebDAVServer(models.Model, storage.Storage):
         tmp.seek(0)
         return tmp
 
-    def save(self, name, content, max_length=None):
+    def store(self, name, content, max_length=None):
         self.ensure_connected()
         tmp = tempfile.NamedTemporaryFile()
         tmp.write(content.read())
