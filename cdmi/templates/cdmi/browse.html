@@ -2,7 +2,7 @@
 {% load static %}
 {% load utils %}
 
-{% block title %}{{ view.site.site_name }} - {{ display_path }}{% endblock %}
+{% block title %}{{ view.site.site_name }} - {% if view.site.root_container %}/{{ view.site.root_container }}{% endif %}/{{ view.path }}{% endblock %}
 
 {% block head %}
 <script>
@@ -24,7 +24,7 @@
         {% if view.site.logo_uri %}
         <a class="navbar-brand" style="padding: 5px 15px"><img src="{{ view.site.logo_uri }}" height="40"></a>
         {% endif %}
-        <a class="navbar-brand" href="#"><strong>{{ view.site.site_uri }}</strong>/{{ display_path }}</a>
+        <a class="navbar-brand" href="#"><strong>{{ view.site.site_uri }}{% if view.site.root_container %}/{{ view.site.root_container }}{% endif %}</strong>/{{ view.path }}</a>
       </div>
       <div id="navbar" class="navbar-collapse collapse">
         <ul class="nav navbar-nav navbar-right">

@@ -190,8 +190,6 @@ class BrowserView(CdmiWebView):
 
         logger.debug("Browsing path '{}'".format(path))
 
-        context['display_path'] = os.path.join(self.site.root_container, self.path)
-
         try:
             if self.site.can_browse:
                 browser.handle_create_directory(
