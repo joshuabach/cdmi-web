@@ -10,10 +10,10 @@
     <tbody>
     {% for provider in provider_list %}
         {% if provider.logo_uri %}
-        <tr><td align="center"><a href="{{ provider.authorization_endpoint }}?client_id={{ provider.client_id }}&redirect_uri={{ provider.redirect_uri }}&state={{ provider.client_id }}.{{ state }}&response_type=code&scope=openid%20email"><img src="{{ provider.logo_uri }}" alt="{{ provider.provider_name }}" height="100"></img></a></td>
+        <tr><td align="center"><a href="{{ provider.authorization_endpoint }}?client_id={{ provider.client_id }}&redirect_uri={{ provider.redirect_uri }}&state={{ provider.client_id }}.{{ state }}&response_type=code&scope=openid%20profile"><img src="{{ provider.logo_uri }}" alt="{{ provider.provider_name }}" height="100"></img></a></td>
         </tr>
         {% else %}
-        <tr><td align="center"><a href="{{ provider.authorization_endpoint }}?client_id={{ provider.client_id }}&redirect_uri={{ provider.redirect_uri }}&state={{ provider.client_id }}.{{ state }}&response_type=code&scope=openid%20email">{{ provider.provider_name }}</a></td></tr>
+        <tr><td align="center"><a href="{{ provider.authorization_endpoint }}?client_id={{ provider.client_id }}&redirect_uri={{ provider.redirect_uri }}&state={{ provider.client_id }}.{{ state }}&response_type=code&scope=openid%20profile">{{ provider.provider_name }}</a></td></tr>
         {% endif %}
     {% endfor %}
     </tbody>
