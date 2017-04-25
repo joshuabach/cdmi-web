@@ -13,7 +13,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.sessions.models import Session
 
-from webdav.connection import NotConnection
+from webdav.connection import NotConnection, RemoteParentNotFound
 
 from .models import Site
 from . import cdmi, browser
@@ -198,7 +198,7 @@ class BrowserView(CdmiWebView):
 
             context['object_list'] = cdmi.list_objects(
                 self.site, path, self.request.session['access_token'])
-        except (ConnectionError, NotConnection) as e:
+        except (ConnectionError, NotConnection, RemoteParentNotFound) as e:
             msg = '{}: {}'.format(self.site.site_uri, str(e))
 
             logger.warning(msg)
