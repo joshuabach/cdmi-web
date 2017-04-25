@@ -109,6 +109,8 @@ class Site(models.Model):
         WebDAVServer,
         blank=True, null=True, on_delete=models.SET_NULL)
 
+    root_container = models.CharField(max_length=200, blank=True, default='')
+
     default = models.BooleanField(default=False)
 
     last_modified = models.DateTimeField(auto_now=True)

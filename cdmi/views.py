@@ -21,6 +21,15 @@ from .cdmi import CdmiError
 logger = logging.getLogger(__name__)
 
 
+def true_path(apparent_path, site, user):
+    if site.can_browse:
+        prefix = os.path.join(site.root_container, user.username)
+    else:
+        prefix = site.root_container
+
+    return os.path.join(prefix, re.sub('^/', '', apparent_path))
+
+
 def has_access_token(user):
     for session in Session.objects.all():
         data = session.get_decoded()
@@ -49,10 +58,8 @@ def object_info(request, site, path):
     # Basically, this is a CDMI proxy for the jQuery
     site = Site.objects.get(id=site)
     path = re.sub('/+', '/', path)
-    if site.can_browse and not path.startswith('/cdmi_'):
-        cdmi_path = os.path.join(request.user.username, re.sub('^/', '', path))
-    else:
-        cdmi_path = path
+    if not path.startswith('/cdmi_'):
+        cdmi_path = true_path(path, site, request.user)
 
     try:
         object_info = cdmi.get_status(
@@ -74,10 +81,7 @@ def object_info(request, site, path):
 def update(request, site, path):
     site = Site.objects.get(id=site)
     path = re.sub('/+', '/', path)
-    if site.can_browse:
-        cdmi_path = os.path.join(request.user.username, re.sub('^/', '', path))
-    else:
-        cdmi_path = path
+    cdmi_path = true_path(path, site, request.user)
 
     if request.method == 'POST':
         if 'qos' in request.POST and 'type' in request.POST:
@@ -96,10 +100,7 @@ def update(request, site, path):
 def delete(request, site, path):
     site = Site.objects.get(id=site)
     path = re.sub('/+', '/', path)
-    if site.can_browse:
-        cdmi_path = os.path.join(request.user.username, re.sub('^/', '', path))
-    else:
-        cdmi_path = path
+    cdmi_path = true_path(path, site, request.user)
 
     if request.method == 'POST' and 'name' in request.POST and site.can_browse:
         browser.handle_delete_object(
@@ -121,10 +122,7 @@ def delete(request, site, path):
 def upload(request, site, path):
     site = Site.objects.get(id=site)
     path = re.sub('/+', '/', path)
-    if site.can_browse:
-        cdmi_path = os.path.join(request.user.username, re.sub('^/', '', path))
-    else:
-        cdmi_path = path
+    cdmi_path = true_path(path, site, request.user)
 
     if request.method == 'POST' and 'file' in request.FILES and site.can_browse:
         browser.handle_uploaded_file(
@@ -146,10 +144,7 @@ def upload(request, site, path):
 def mkdir(request, site, path):
     site = Site.objects.get(id=site)
     path = re.sub('/+', '/', path)
-    if site.can_browse:
-        cdmi_path = os.path.join(request.user.username, re.sub('^/', '', path))
-    else:
-        cdmi_path = path
+    cdmi_path = true_path(path, site, request.user)
 
     if request.method == 'POST' and 'name' in request.POST and site.can_browse:
         browser.handle_create_directory(
@@ -190,14 +185,12 @@ class BrowserView(CdmiWebView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        if self.site.can_browse:
-            path = os.path.join(self.request.user.username, re.sub('^/', '', self.path))
+        path = true_path(self.path, self.site, self.request.user)
 
+        if self.site.can_browse:
             browser.handle_create_directory(
-                self.site, self.request.user.username, '',
+                self.site, os.path.join(self.site.root_container, self.request.user.username), '',
                 self.request.session['access_token'])
-        else:
-            path = self.path
 
         logger.debug("Browsing path '{}'".format(path))
 
