@@ -1,0 +1,3 @@
+[submodule "webdav-client-python"]
+	path = lib/webdav-client-python
+	url = github.com:joshuabach/webdav-client-python
