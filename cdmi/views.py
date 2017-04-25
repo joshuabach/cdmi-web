@@ -194,6 +194,8 @@ class BrowserView(CdmiWebView):
 
         logger.debug("Browsing path '{}'".format(path))
 
+        context['display_path'] = os.path.join(self.site.root_container, self.path)
+
         try:
             context['object_list'] = cdmi.list_objects(
                 self.site, path, self.request.session['access_token'])
