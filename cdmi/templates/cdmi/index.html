@@ -41,7 +41,7 @@
             {{ qos.metadata.cdmi_data_storage_lifetime|isoduration }}
             {% endif %}
           </td>
-          <td>{{ qos.location.0 }}</td>
+          <td>{{ qos.location|join:"," }}</td>
           <td data-value="{{ qos.storage_types|slugify }}">
             {% for type in qos.storage_types %}
             <img title="{{ type|capfirst }}"
