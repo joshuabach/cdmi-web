@@ -60,7 +60,7 @@ def object_info(request, site, path):
     site = Site.objects.get(id=site)
     path = re.sub('/+', '/', path)
     cdmi_path = path
-    if not path.startswith('/cdmi_'):
+    if not (path.startswith('cdmi_') or path.startswith('/cdmi_')):
         cdmi_path = true_path(path, site, request.user)
 
     try:
