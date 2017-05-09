@@ -1,6 +1,7 @@
 import requests
 import logging
 import re
+import traceback
 
 from requests.compat import urljoin, urlsplit
 from requests.exceptions import ConnectionError
@@ -122,10 +123,24 @@ def get_capabilities_class(url, access_token, classes=None):
     capabilities_class = dict()
     try:
         name = capabilities['objectName']
-        copies = capabilities['metadata']['cdmi_data_redundancy']
-        latency = capabilities['metadata']['cdmi_latency']
-        location = capabilities['metadata']['cdmi_geographic_placement']
-        transitions = capabilities['metadata']['cdmi_capabilities_allowed']
+
+        copies = capabilities['metadata'].get('cdmi_data_redundancy', None)
+        if not copies:
+            copies = capabilities['metadata'].get('cdmi_data_redundancy_provided', '')
+            capabilities['metadata']['cdmi_data_redundancy'] = copies
+
+        latency = capabilities['metadata'].get('cdmi_latency', None)
+        if not latency:
+            latency = capabilities['metadata'].get('cdmi_latency_provided', '1')
+            capabilities['metadata']['cdmi_latency'] = latency
+
+        location = capabilities['metadata'].get('cdmi_geographic_placement', None)
+        if not location:
+            location = capabilities['metadata'].get('cdmi_geographic_placement_provided', '')
+            capabilities['metadata']['cdmi_geographic_placement'] = location
+
+        # transitions = capabilities['metadata']['cdmi_capabilities_allowed']
+        transitions = capabilities['metadata'].get('cdmi_capabilities_allowed','')
         transitions = [re.sub('/$', '', x).rsplit('/', 1)[-1] for x in transitions]
 
         qos = [storage_type
@@ -139,6 +154,8 @@ def get_capabilities_class(url, access_token, classes=None):
 
         logger.debug('QoS for {}: {}'.format(name, qos))
     except KeyError as e:
+        logger.debug("Error {}".format(e.args[0]))
+        logger.error(traceback.format_exc())
         raise CdmiError(msg="Missing key in JSON response", url=url,
                         key=e.args[0], capabilities=capabilities) from e
 

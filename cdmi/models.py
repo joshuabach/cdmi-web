@@ -32,7 +32,17 @@ class FileSystemStorage(storage.FileSystemStorage):
             shutil.rmtree(self.path(name))
 
     def store(self, name, content, max_length=None):
-        self.save(name, content, max_length)
+        logger.debug("Try to save file with...")
+        logger.debug("location: {}".format(self.location))
+        logger.debug("base_url: {}".format(self.base_url))
+        logger.debug("name: {}".format(name))
+        logger.debug("content: {}".format(str(content)))
+
+        import os
+        with open(os.path.join(self.location, name), 'wb') as f:
+            f.write(content.file.read())
+
+        #self.save(name, content, max_length)
 
 
 class WebDAVServer(models.Model, storage.Storage):

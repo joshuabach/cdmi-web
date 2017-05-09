@@ -59,6 +59,7 @@ def object_info(request, site, path):
     # Basically, this is a CDMI proxy for the jQuery
     site = Site.objects.get(id=site)
     path = re.sub('/+', '/', path)
+    cdmi_path = path
     if not path.startswith('/cdmi_'):
         cdmi_path = true_path(path, site, request.user)
 
