@@ -97,7 +97,7 @@
         {% else %}
         <td>
           <a href="{% if view.path %}
-                    {% url 'cdmi:browse' view.site.id view.path|add:"/"|add:o.name %}
+                    {% url 'cdmi:browse' view.site.id view.path|pathjoin:o.name %}
                    {% else %}
                     {% url 'cdmi:browse' view.site.id o.name %}
                    {% endif %}">

@@ -28,6 +28,12 @@ def basename(path):
 
 
 @register.filter
+@stringfilter
+def pathjoin(path1, path2):
+    return os.path.join(path1, path2)
+
+
+@register.filter
 def is_url(string):
     return re.search('^http', string)
 
