@@ -15,7 +15,7 @@ register = template.Library()
 @register.filter
 @stringfilter
 def dirname(path):
-    dirname, _ = os.path.split(path)
+    dirname, _ = os.path.split(path.rstrip('/'))
     return dirname
 
 
@@ -23,7 +23,7 @@ def dirname(path):
 @register.filter
 @stringfilter
 def basename(path):
-    _, basename = os.path.split(path)
+    _, basename = os.path.split(path.rstrip('/'))
     return basename
 
 
