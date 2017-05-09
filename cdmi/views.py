@@ -180,9 +180,13 @@ class BrowserView(CdmiWebView):
         else:
             self.site = Site.objects.get(default=True)
 
-        self.path = re.sub('/+', '/', path)
-
-        return super().dispatch(request, site, path)
+        # Remove leading '/', replace multiple slashes
+        clean_path = re.sub('/+', '/', path).lstrip('/')
+        if clean_path == path:
+            self.path = path
+            return super().dispatch(request, site, path)
+        else:
+            return redirect('cdmi:browse', site, clean_path)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
