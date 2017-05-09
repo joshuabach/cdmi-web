@@ -32,18 +32,18 @@ $.fn.changeqos = function(target_capability) {
                 var next_timeout = data.metadata.cdmi_recommended_polling_interval;
                 message('info', "Put "+file_path+" in transition. Polling in "+next_timeout+"ms");
 
-                entry.poll(next_timeout);
+                entry.poll(target_capability, next_timeout);
             } else {
                 message('info', "Put "+file_path+" in transition");
 
-                entry.poll()
+                entry.poll(target_capability)
             }
         });
     });
 };
 
 
-$.fn.poll = function(timeout) {
+$.fn.poll = function(target_capability, timeout) {
     return this.each(function() {
         var entry = $(this);
 
@@ -68,19 +68,23 @@ $.fn.poll = function(timeout) {
                     var next_timeout = data.metadata.cdmi_recommended_polling_interval;
                     message('info', "Polled "+file_path+", still in transition. Polling again in "+next_timeout+"ms") ;
 
-                    entry.poll(next_timeout);
+                    entry.poll(target_capability, next_timeout);
                 } else {
                     var new_capability = data.capabilitiesURI.split('/').pop();
-                    message('info', "Polled "+file_path+", transition to "+new_capability+" finished");
+                    if (target_capability != data.capabilitiesURI) {
+                        message('warning', "Polled "+file_path+", transition finished, but capability is still "+data.capabilitiesURI.split('/').pop());
+                    } else {
+                        message('info', "Polled "+file_path+", transition to "+new_capability+" finished");
+
+                        // Use the old target qos as the new current qos
+                        qos.empty();
+                        qos.append(target.contents());
+                    }
 
                     // Switch back to displaying the target capability selection
                     progress.css('display', 'none');
                     target.css('display', 'none');
                     select.css('display', 'block');
-
-                    // Use the old target qos as the new current qos
-                    qos.empty();
-                    qos.append(target.contents());
 
                     var capabilities_allowed = data.metadata.cdmi_capabilities_allowed_provided;
                     // Update the list of allowed transitions in the "select" dropdown menu
