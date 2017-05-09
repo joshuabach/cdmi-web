@@ -9,6 +9,7 @@ from json import JSONDecodeError
 
 from django.conf import settings
 from django.shortcuts import reverse
+from django.contrib import messages
 
 from .models import Site
 
@@ -225,7 +226,7 @@ class FileObject(object):
         self.capabilities_polling = metadata.get('cdmi_recommended_polling_interval', '')
 
 
-def list_objects(site, path, access_token):
+def list_objects(request, site, path, access_token):
     url = urljoin(site.site_uri, path)
     try:
         children = _query_cdmi(url, access_token)['children']
@@ -255,9 +256,14 @@ def list_objects(site, path, access_token):
             logger.warning('{} returned non-existent object {}'.format(
                 site.site_uri, child))
         except KeyError as e:
-            raise CdmiError(msg='No metadata returned',
-                            url=obj.capabilities_target,
-                            key=e.args[0])
+            msg = '{}: {}'.format(child_url, str(e))
+            logger.error(msg)
+            messages.error(request, msg)
+
+        except CdmiError as e:
+            msg = '{}: {}'.format(e.dict.get('url', child_url), e.dict['msg'])
+            logger.error(msg)
+            messages.error(request, msg)
         else:
             object_list.append(obj)
 

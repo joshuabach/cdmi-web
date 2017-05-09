@@ -202,6 +202,7 @@ class BrowserView(CdmiWebView):
                     self.request.session['access_token'])
 
             context['object_list'] = cdmi.list_objects(
+                self.request,
                 self.site, path, self.request.session['access_token'])
         except (ConnectionError, NotConnection, RemoteParentNotFound) as e:
             msg = '{}: {}'.format(self.site.site_uri, str(e))
