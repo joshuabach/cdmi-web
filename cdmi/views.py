@@ -182,6 +182,7 @@ class BrowserView(CdmiWebView):
 
         # Remove leading '/', replace multiple slashes
         clean_path = re.sub('/+', '/', path).lstrip('/')
+        clean_path = clean_path + '/' if clean_path and clean_path[-1] != '/' else clean_path
         if clean_path == path:
             self.path = path
             return super().dispatch(request, site, path)
